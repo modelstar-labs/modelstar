@@ -2,7 +2,8 @@ import click
 import os
 from shutil import copytree
 from modelstar.templates import TEMPLATES_PATH
-import tomlkit
+import tomlkit 
+import  modelstar.connectors.snowflake as snowflake_connector
 
 
 @click.group()
@@ -73,12 +74,18 @@ def test(target):
 
     assert "snowflake" in modelstar_config_doc, "Missing Snowflake credentials."
 
-    account = modelstar_config_doc.get("account")
-    username = modelstar_config_doc.get("username")
-    password = modelstar_config_doc.get("password")
-    database = modelstar_config_doc.get("database")
-    warehouse = modelstar_config_doc.get("warehouse")
-    role = modelstar_config_doc.get("role")
+    snowflake_config = modelstar_config_doc.get('snowflake')
+
+    account = snowflake_config.get("account")
+    username = snowflake_config.get("username")
+    password = snowflake_config.get("password")
+    database = snowflake_config.get("database")
+    warehouse = snowflake_config.get("warehouse")
+    role = snowflake_config.get("role")    
+
+    snowflake_connector.test_connection(snowflake_config)
+
+    # os.walk to get files and dirs: https://www.tutorialspoint.com/python/os_walk.htm
 
 
 @main.command("build")
