@@ -1,0 +1,9 @@
+# Modelstar project details
+
+[snowflake]
+
+username = "<username>" 
+password = "<password>" 
+account = "<account>" 
+database = "<database>" 
+warehouse = "<warehouse>" 
