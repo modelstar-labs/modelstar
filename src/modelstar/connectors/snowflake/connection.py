@@ -13,7 +13,11 @@ def test(config):
     try:
         cs.execute("SELECT current_version()")
         one_row = cs.fetchone()
-        print(one_row[0])
+        version = one_row
+    except:
+        version = 'unknown'
     finally:
         cs.close()
     ctx.close()
+
+    return version

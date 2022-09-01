@@ -2,8 +2,10 @@
 
 [snowflake]
 
+account = "<account>" 
 username = "<username>" 
 password = "<password>" 
-account = "<account>" 
+role = "<role>"
 database = "<database>" 
+schema = "<schema>"
 warehouse = "<warehouse>" 

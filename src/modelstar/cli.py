@@ -83,7 +83,8 @@ def test(target):
     warehouse = snowflake_config.get("warehouse")
     role = snowflake_config.get("role")    
 
-    snowflake_connector.test_connection(snowflake_config)
+    version = snowflake_connector.test_connection(snowflake_config)
+    click.echo(version)
 
     # os.walk to get files and dirs: https://www.tutorialspoint.com/python/os_walk.htm
 
