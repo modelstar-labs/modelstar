@@ -5,54 +5,36 @@ from modelstar.templates import TEMPLATES_PATH
 import tomlkit
 import modelstar.connectors.snowflake as snowflake_connector
 import modelstar.executors.parse_module as file_parser
+from modelstar.commands.project import initialize_project
 
 
 @click.group()
-# @click.option('--database', default=None, help='Target database. Optional: uses the default set in the project config.')
-# @click.option('--schema', default=None, help='Target schema. Optional: uses the default set in the project config.')
-# @click.option('--stage', default=None, help='Target stage. Optional: uses the default set in the project config.')
-# @click.option('--warehouse', default=None, help='Target warehouse. Optional: uses the default set in the project config.')
-def main():
-    pass
+@click.option('--database', default=None, help='Target database. Optional: if None, modelstar uses the one set in the project config or prompts one to be created.')
+@click.option('--schema', default=None, help='Target schema. Optional: if None, modelstar uses the one set in the project config or prompts one to be created.')
+@click.option('--stage', default=None, help='Target stage. Optional: if None, modelstar uses the one set in the project config or prompts one to be created.')
+@click.option('--warehouse', default=None, help='Target warehouse. Optional: if None, modelstar uses the one set in the project config or prompts one to be created.')
+@click.pass_context
+def main(ctx, database, schema, stage, warehouse):
+    # ensure that ctx.obj exists and is a dict (in case `cli()` is called
+    # by means other than the `if` block below)
+    ctx.ensure_object(dict)
+
+    ctx.obj['database'] = database
+    ctx.obj['schema'] = schema
+    ctx.obj['stage'] = stage
+    ctx.obj['warehouse'] = warehouse
 
 
 @main.command("init")
 @click.argument("projectname", required=True, type=str)
-def init(projectname):
+def init(projectname: str):
     '''
     modelstar init <project_name>/<. = current folder name>
-    creates a folder with the project name
-    creates files inside
-        config.modelstar
-        .modelstar/databases/....info after connecting
-        /models/model_1.sql
-        /functions/example.py
+    creates a folder with the project name using a project template    
     '''
 
-    current_working_directory = os.getcwd()
-    # current_folder_name = os.path.basename(current_working_directory)
-    base_template_path = os.path.join(TEMPLATES_PATH, 'snowflake_project')
-
-    if projectname != '.':
-        project_folder_path = os.path.join(
-            current_working_directory, projectname)
-        try:
-            destination = copytree(base_template_path, project_folder_path)
-            click.echo(
-                f"Yout project has been created.\nProject location: {destination}")
-        except FileExistsError as e:
-            click.echo(f"Project not initialized.\n\nFileExitsError: {e}")
-    else:
-        # If the projectname is = ., create the files inside this folder.
-        # Check if the files and folders inside this folder don't have the names we are using.
-        try:
-            destination = copytree(
-                base_template_path, current_working_directory)
-            click.echo(
-                f"Yout project has been created.\nProject location: {destination}")
-        except FileExistsError as e:
-            click.echo(
-                f"Project not initialized. There are files in the current folder that conflict with the project initialization.\n\nFileExitsError: {e}")
+    destination = initialize_project(project_name=projectname)
+    click.echo(f"\nYour project has been created.\n\nProject location: {destination}")
 
 
 @main.command("test")
@@ -125,20 +107,20 @@ def build(file_name, function_name, **kwargs):
 
     snowflake_config = modelstar_config_doc.get('snowflake')
 
-    # Get the imports and function list. 
-    # send -> abs file path and get all the info about the functions and imports. 
+    # Get the imports and function list.
+    # send -> abs file path and get all the info about the functions and imports.
     module_functions = file_parser.get_info(abs_file_path)
     functions_in_modules = [func.name for func in module_functions]
     if function_name not in functions_in_modules:
         raise ValueError
-    
+
     # click.echo(module_functions)
-    
-    # TODO Add stage name here, or use default user stage 
+
+    # TODO Add stage name here, or use default user stage
     # snowflake_connector.register_udf(snowflake_config, 'addition')
-    sqlc = snowflake_connector.register_from_file(snowflake_config, abs_file_path, module_functions[0])
+    sqlc = snowflake_connector.register_from_file(
+        snowflake_config, abs_file_path, module_functions[0])
     click.echo(sqlc)
-    
 
     # with open(target_function_path, "r") as source:
     #     tree = ast.parse(source.read())
