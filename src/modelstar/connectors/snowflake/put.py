@@ -1,8 +1,7 @@
 import snowflake.connector
 
 
-def test(config):
-    # Gets the version
+def put_file(config, file_path: str):
     ctx = snowflake.connector.connect(
         user=config['username'],
         password=config['password'],
@@ -10,13 +9,10 @@ def test(config):
     )
     cs = ctx.cursor()
     try:
-        cs.execute("SELECT current_version()")
-        one_row = cs.fetchone()
-        version = one_row
-    except:
-        version = 'unknown'
+        cs.execute("use TEST_ML_1_KAGGLE.public")
+        cs.execute(f"put file://{file_path} @test_1")
+    except Exception as e:
+        print(e.args)
     finally:
         cs.close()
     ctx.close()
-
-    return version

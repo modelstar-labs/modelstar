@@ -17,3 +17,9 @@ Inside the project folder change the values in `modelstar_project.toml` to the o
 ```shell
 modelstar test connection
 ``` 
+
+## Register a python function to your database and schema
+
+```shell
+modelstar register addition.py addition
+```

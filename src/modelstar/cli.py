@@ -2,11 +2,16 @@ import click
 import os
 from shutil import copytree
 from modelstar.templates import TEMPLATES_PATH
-import tomlkit 
-import  modelstar.connectors.snowflake as snowflake_connector
+import tomlkit
+import modelstar.connectors.snowflake as snowflake_connector
+import modelstar.executors.parse_module as file_parser
 
 
 @click.group()
+# @click.option('--database', default=None, help='Target database. Optional: uses the default set in the project config.')
+# @click.option('--schema', default=None, help='Target schema. Optional: uses the default set in the project config.')
+# @click.option('--stage', default=None, help='Target stage. Optional: uses the default set in the project config.')
+# @click.option('--warehouse', default=None, help='Target warehouse. Optional: uses the default set in the project config.')
 def main():
     pass
 
@@ -81,12 +86,63 @@ def test(target):
     password = snowflake_config.get("password")
     database = snowflake_config.get("database")
     warehouse = snowflake_config.get("warehouse")
-    role = snowflake_config.get("role")    
+    role = snowflake_config.get("role")
 
     version = snowflake_connector.test_connection(snowflake_config)
     click.echo(version)
 
     # os.walk to get files and dirs: https://www.tutorialspoint.com/python/os_walk.htm
+
+
+@main.command("register")
+@click.argument("file_name", required=True)
+@click.argument("function_name", required=True)
+def build(file_name, function_name, **kwargs):
+    '''
+    modelstar register <function_name>
+        registers the function that is in the functions folder.
+    '''
+    click.echo(f"Registering `{file_name}` function... ")
+
+    target = file_name.strip()
+    # Clean target : check if a .py file or a path to a .py file.
+    current_working_directory = os.getcwd()
+    functions_folder_path = os.path.join(
+        current_working_directory, 'functions')
+    target_function_path = os.path.join(functions_folder_path, target)
+
+    if not os.path.exists(target_function_path):
+        raise ValueError(f"{target} does not exist")
+
+    click.echo(f'{target} check done.')
+    abs_file_path = os.path.abspath(target_function_path)
+    click.echo(f'{abs_file_path}')
+
+    modelstar_config_doc = tomlkit.parse(
+        open('./modelstar_project.toml').read())
+
+    assert "snowflake" in modelstar_config_doc, "Missing Snowflake credentials."
+
+    snowflake_config = modelstar_config_doc.get('snowflake')
+
+    # Get the imports and function list. 
+    # send -> abs file path and get all the info about the functions and imports. 
+    module_functions = file_parser.get_info(abs_file_path)
+    functions_in_modules = [func.name for func in module_functions]
+    if function_name not in functions_in_modules:
+        raise ValueError
+    
+    # click.echo(module_functions)
+    
+    # TODO Add stage name here, or use default user stage 
+    # snowflake_connector.register_udf(snowflake_config, 'addition')
+    sqlc = snowflake_connector.register_from_file(snowflake_config, abs_file_path, module_functions[0])
+    click.echo(sqlc)
+    
+
+    # with open(target_function_path, "r") as source:
+    #     tree = ast.parse(source.read())
+    #     click.echo(tree)
 
 
 @main.command("build")
