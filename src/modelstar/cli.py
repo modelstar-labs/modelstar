@@ -1,11 +1,10 @@
 import click
 import os
-from shutil import copytree
-from modelstar.templates import TEMPLATES_PATH
-import tomlkit
+from modelstar.commands.project import initialize_project, check_project_structure
+from modelstar.executors.config import load_config
+from modelstar.connectors.snowflake.context import SnowflakeContext
 import modelstar.connectors.snowflake as snowflake_connector
 import modelstar.executors.parse_module as file_parser
-from modelstar.commands.project import initialize_project
 
 
 @click.group()
@@ -17,6 +16,7 @@ from modelstar.commands.project import initialize_project
 def main(ctx, database, schema, stage, warehouse):
     # ensure that ctx.obj exists and is a dict (in case `cli()` is called
     # by means other than the `if` block below)
+    
     ctx.ensure_object(dict)
 
     ctx.obj['database'] = database
@@ -34,10 +34,11 @@ def init(projectname: str):
     '''
 
     destination = initialize_project(project_name=projectname)
-    click.echo(f"\nYour project has been created.\n\nProject location: {destination}")
+    click.echo(
+        f"\nYour project has been created.\n\nProject location: {destination}")
 
 
-@main.command("test")
+@main.command("use")
 @click.argument("target", required=True)
 def test(target):
     '''
@@ -45,33 +46,19 @@ def test(target):
         checks if the config.modelstar parameters are right
         connects to the server of snowflake and gets all the database info 
     '''
-    click.echo(f"Test: {target}")
+    check_project_structure()
 
-    cwd = os.getcwd()
-    project_list_set = set(['modelstar_project.toml', 'models', '.modelstar'])
-    cwd_list_set = set(os.listdir(cwd))
+    click.echo(f"\nLoading configuration: [{target}]\n")
 
-    assert cwd_list_set.issubset(
-        project_list_set), "Missing files, or not a modelstar project"
+    snowflake_config = load_config(target)
+    snowflake_context = SnowflakeContext(snowflake_config)
 
-    assert 'modelstar_project.toml' in cwd_list_set, "Missing modelstrat_project.toml configuration file."
+    table = snowflake_context.execute_with_context(['SHOW DATABASES'])
+    click.echo(f"\nShowing available databases for config: [{target}]\n")
+    click.echo(table.print(cols=['created_on', 'name', 'origin', 'owner']))
 
-    modelstar_config_doc = tomlkit.parse(
-        open('./modelstar_project.toml').read())
-
-    assert "snowflake" in modelstar_config_doc, "Missing Snowflake credentials."
-
-    snowflake_config = modelstar_config_doc.get('snowflake')
-
-    account = snowflake_config.get("account")
-    username = snowflake_config.get("username")
-    password = snowflake_config.get("password")
-    database = snowflake_config.get("database")
-    warehouse = snowflake_config.get("warehouse")
-    role = snowflake_config.get("role")
-
-    version = snowflake_connector.test_connection(snowflake_config)
-    click.echo(version)
+    # version = snowflake_connector.test_connection(snowflake_config)
+    # click.echo(version)
 
     # os.walk to get files and dirs: https://www.tutorialspoint.com/python/os_walk.htm
 
@@ -100,12 +87,7 @@ def build(file_name, function_name, **kwargs):
     abs_file_path = os.path.abspath(target_function_path)
     click.echo(f'{abs_file_path}')
 
-    modelstar_config_doc = tomlkit.parse(
-        open('./modelstar_project.toml').read())
-
-    assert "snowflake" in modelstar_config_doc, "Missing Snowflake credentials."
-
-    snowflake_config = modelstar_config_doc.get('snowflake')
+    snowflake_config = load_config()
 
     # Get the imports and function list.
     # send -> abs file path and get all the info about the functions and imports.
@@ -125,23 +107,3 @@ def build(file_name, function_name, **kwargs):
     # with open(target_function_path, "r") as source:
     #     tree = ast.parse(source.read())
     #     click.echo(tree)
-
-
-@main.command("build")
-@click.argument("target", required=True)
-def build(target):
-    '''
-    modelstar build <model_name>
-        builds the model in the <model_name>.py script
-        deploys the model for inference
-    '''
-    print(f"Build: {target}")
-
-
-@main.command("run")
-def run():
-    '''
-    modelstar run/start/launch
-        starts the interactive server interface
-    '''
-    print(f"Run")

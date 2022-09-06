@@ -27,3 +27,12 @@ def initialize_project(project_name: str):
                 f"Project not initialized. There are files in the current folder that conflict with the project initialization.\n\nFileExitsError: {e}")
 
     return destination
+
+def check_project_structure():
+    cwd = os.getcwd()
+    project_list_set = set(['modelstar_project.toml', '.modelstar'])
+    cwd_list_set = set(os.listdir(cwd))
+
+    assert project_list_set.issubset(cwd_list_set), "Missing files, or not a modelstar project"
+
+    assert 'modelstar_project.toml' in cwd_list_set, "Missing modelstrat_project.toml configuration file."

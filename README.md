@@ -15,7 +15,7 @@ Inside the project folder change the values in `modelstar_project.toml` to the o
 ## Test connection with the credentails you've given
 
 ```shell
-modelstar test connection
+modelstar use <config_name>
 ``` 
 
 ## Register a python function to your database and schema
