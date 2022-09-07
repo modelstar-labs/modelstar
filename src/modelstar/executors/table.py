@@ -28,7 +28,8 @@ class TableView():
                 for idx, item in enumerate(row):
                     if idx in col_idx_select:
                         if isinstance(item, datetime.datetime):
-                            item = item.astimezone(LOCAL_TIMEZONE).strftime(self._datetime_format)
+                            item = item.astimezone(LOCAL_TIMEZONE).strftime(
+                                self._datetime_format)
 
                         formatted_row.append(item)
 
@@ -39,7 +40,8 @@ class TableView():
                 formatted_row = []
                 for idx, item in enumerate(row):
                     if isinstance(item, datetime.datetime):
-                        item = item.astimezone(LOCAL_TIMEZONE).strftime(self._datetime_format)
+                        item = item.astimezone(LOCAL_TIMEZONE).strftime(
+                            self._datetime_format)
 
                     formatted_row.append(item)
 

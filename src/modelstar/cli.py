@@ -1,10 +1,9 @@
 import click
 import os
 from modelstar.commands.project import initialize_project, check_project_structure
+from modelstar.commands.database import list_databases
+from modelstar.commands.register import register_function
 from modelstar.executors.config import load_config
-from modelstar.connectors.snowflake.context import SnowflakeContext
-import modelstar.connectors.snowflake as snowflake_connector
-import modelstar.executors.parse_module as file_parser
 
 
 @click.group()
@@ -16,7 +15,7 @@ import modelstar.executors.parse_module as file_parser
 def main(ctx, database, schema, stage, warehouse):
     # ensure that ctx.obj exists and is a dict (in case `cli()` is called
     # by means other than the `if` block below)
-    
+
     ctx.ensure_object(dict)
 
     ctx.obj['database'] = database
@@ -27,7 +26,8 @@ def main(ctx, database, schema, stage, warehouse):
 
 @main.command("init")
 @click.argument("projectname", required=True, type=str)
-def init(projectname: str):
+@click.pass_context
+def init(ctx, projectname: str):
     '''
     modelstar init <project_name>/<. = current folder name>
     creates a folder with the project name using a project template    
@@ -35,75 +35,50 @@ def init(projectname: str):
 
     destination = initialize_project(project_name=projectname)
     click.echo(
-        f"\nYour project has been created.\n\nProject location: {destination}")
+        f"\n\tYour project has been created.\n\n\tProject location: {destination}\n")
 
 
 @main.command("use")
-@click.argument("target", required=True)
-def test(target):
+@click.argument("target_config", required=True)
+@click.pass_context
+def session(ctx, target_config):
     '''
-    modelstar connect
+    modelstar use target_confg
         checks if the config.modelstar parameters are right
         connects to the server of snowflake and gets all the database info 
     '''
     check_project_structure()
 
-    click.echo(f"\nLoading configuration: [{target}]\n")
+    click.echo(f"\n\tLoading configuration: [{target_config}]\n")
 
-    snowflake_config = load_config(target)
-    snowflake_context = SnowflakeContext(snowflake_config)
+    config = load_config(target_config)
 
-    table = snowflake_context.execute_with_context(['SHOW DATABASES'])
-    click.echo(f"\nShowing available databases for config: [{target}]\n")
-    click.echo(table.print(cols=['created_on', 'name', 'origin', 'owner']))
+    response = list_databases(config)
 
-    # version = snowflake_connector.test_connection(snowflake_config)
-    # click.echo(version)
-
-    # os.walk to get files and dirs: https://www.tutorialspoint.com/python/os_walk.htm
+    click.echo(
+        f"\n\tShowing available databases for config: [{target_config}]\n")
+    click.echo(response)
 
 
 @main.command("register")
-@click.argument("file_name", required=True)
 @click.argument("function_name", required=True)
-def build(file_name, function_name, **kwargs):
+@click.argument("file_name", required=True)
+@click.pass_context
+def build(ctx, function_name, file_name):
     '''
     modelstar register <function_name>
         registers the function that is in the functions folder.
     '''
-    click.echo(f"Registering `{file_name}` function... ")
+    click.echo(
+        f"\n\tRegistering function: `{function_name}` from `{file_name}`.\n")
 
-    target = file_name.strip()
-    # Clean target : check if a .py file or a path to a .py file.
-    current_working_directory = os.getcwd()
-    functions_folder_path = os.path.join(
-        current_working_directory, 'functions')
-    target_function_path = os.path.join(functions_folder_path, target)
+    check_project_structure()
 
-    if not os.path.exists(target_function_path):
-        raise ValueError(f"{target} does not exist")
+    # TODO: get from session
+    config = load_config('snowflake')
 
-    click.echo(f'{target} check done.')
-    abs_file_path = os.path.abspath(target_function_path)
-    click.echo(f'{abs_file_path}')
+    response = register_function(config, function_name, file_name)
 
-    snowflake_config = load_config()
+    click.echo(response)
 
-    # Get the imports and function list.
-    # send -> abs file path and get all the info about the functions and imports.
-    module_functions = file_parser.get_info(abs_file_path)
-    functions_in_modules = [func.name for func in module_functions]
-    if function_name not in functions_in_modules:
-        raise ValueError
-
-    # click.echo(module_functions)
-
-    # TODO Add stage name here, or use default user stage
-    # snowflake_connector.register_udf(snowflake_config, 'addition')
-    sqlc = snowflake_connector.register_from_file(
-        snowflake_config, abs_file_path, module_functions[0])
-    click.echo(sqlc)
-
-    # with open(target_function_path, "r") as source:
-    #     tree = ast.parse(source.read())
-    #     click.echo(tree)
+    click.echo(f"\n\tFunction available at: `{config.database}.{config.schema}`\n")

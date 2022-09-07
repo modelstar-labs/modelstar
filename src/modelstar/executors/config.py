@@ -17,9 +17,10 @@ def load_config(target: str):
     database = target_config_doc.get("database")
     schema = target_config_doc.get("schema")
     warehouse = target_config_doc.get("warehouse")
+    stage = target_config_doc.get("stage")
     role = target_config_doc.get("role")
 
     config = SnowflakeConfig(user=user, account=account, password=password,
-                             database=database, warehouse=warehouse, schema=schema, role=role)
+                             database=database, warehouse=warehouse, schema=schema, role=role, stage=stage)
 
     return config
