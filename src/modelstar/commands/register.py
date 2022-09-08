@@ -1,5 +1,6 @@
 import os
-import modelstar.executors.parse_module as file_parser
+from pprint import pprint
+from modelstar.executors.py_parser import parse_module_nodes
 from modelstar.connectors.snowflake.context import SnowflakeContext, SnowflakeConfig
 
 
@@ -22,13 +23,18 @@ def check_function_path(file_name: str):
 def parse_function_file(abs_file_path: str, function_name: str, file_name: str):
     # Get the imports and function list.
     # send -> abs file path and get all the info about the functions and imports.
-    module_functions = file_parser.get_info(abs_file_path)
+    parsed_nodes = parse_module_nodes(abs_file_path)
 
     functions_in_modules = []
-    for func in module_functions:
+    for func in parsed_nodes.functions:
         functions_in_modules.append(func.name)
         if function_name == func.name:
+            func.check_typing()
             register_function = func
+
+    for call in parsed_nodes.calls:
+        call.check_paths()
+        pprint(call)
 
     if function_name not in functions_in_modules:
         raise ValueError(
@@ -39,17 +45,18 @@ def parse_function_file(abs_file_path: str, function_name: str, file_name: str):
 
 def register_function(config, function_name: str, file_name: str):
     # TODO Add stage name here, or use default user stage
-    # TODO check if config is a snowflake config
 
     abs_file_path = check_function_path(file_name)
     register_function = parse_function_file(
         abs_file_path, function_name, file_name)
 
-    if isinstance(config, SnowflakeConfig):
-        snowflake_context = SnowflakeContext(config)
-        response = snowflake_context.register_udf(
-            file_path=abs_file_path, function=register_function)
-    else:
-        raise ValueError(f'Failed to register function: {function_name}')
+    return register_function
 
-    return response.print()
+    # if isinstance(config, SnowflakeConfig):
+    #     snowflake_context = SnowflakeContext(config)
+    #     response = snowflake_context.register_udf(
+    #         file_path=abs_file_path, function=register_function)
+    # else:
+    #     raise ValueError(f'Failed to register function: {function_name}')
+
+    # return response.print()

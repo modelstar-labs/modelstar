@@ -1,4 +1,4 @@
-from modelstar.executors.parse_module import ModuleFunction
+from modelstar.executors.py_parser import ModuleFunction
 import os
 
 
@@ -22,8 +22,18 @@ imports = ('@{stage}/{file_name}');""")
     return sql_statements
 
 
-def put_file():
-    pass
+def put_file_from_local(config, file_path: str):
+    database = config.database
+    schema = config.schema
+    stage = config.stage
+
+    sql_statements = []
+
+    # TODO add threads to this to make this faster.
+    sql_statements.append(f'use {database}.{schema}')
+    sql_statements.append(f'put file://{file_path} @{stage}')
+
+    return sql_statements
 
 
 '''

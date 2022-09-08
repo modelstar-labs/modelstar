@@ -1,8 +1,8 @@
 import snowflake.connector
 from dataclasses import dataclass, field
 from modelstar.executors.table import TableView
-from modelstar.executors.parse_module import ModuleFunction
-from .sql_dialect import register_udf_from_file
+from modelstar.executors.py_parser import ModuleFunction
+from .sql_dialect import register_udf_from_file, put_file_from_local
 
 
 @dataclass
@@ -32,6 +32,12 @@ class SnowflakeContext:
     def register_udf(self, file_path: str, function: ModuleFunction):
         sql_statements = register_udf_from_file(
             self.config, file_path, function)
+        response = self.execute_with_context(sql_statements, fetch=5)
+
+        return response
+
+    def put_file(self, file_path: str):
+        sql_statements = put_file_from_local(self.config, file_path)
         response = self.execute_with_context(sql_statements, fetch=5)
 
         return response

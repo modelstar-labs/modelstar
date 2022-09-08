@@ -3,6 +3,7 @@ import os
 from modelstar.commands.project import initialize_project, check_project_structure
 from modelstar.commands.database import list_databases
 from modelstar.commands.register import register_function
+from modelstar.commands.upload import check_file_path, upload_file
 from modelstar.executors.config import load_config
 
 
@@ -70,7 +71,7 @@ def build(ctx, function_name, file_name):
         registers the function that is in the functions folder.
     '''
     click.echo(
-        f"\n\tRegistering function: `{function_name}` from `{file_name}`.\n")
+        f"\n\tRegistering function: `{function_name}` from `{file_name}`\n")
 
     check_project_structure()
 
@@ -81,4 +82,35 @@ def build(ctx, function_name, file_name):
 
     click.echo(response)
 
-    click.echo(f"\n\tFunction available at: `{config.database}.{config.schema}`\n")
+    click.echo(
+        f"\n\tFunction available at: `{config.database}.{config.schema}`\n")
+
+
+@main.command("upload")
+@click.argument("file_path", required=True)
+@click.pass_context
+def build(ctx, file_path):
+    '''
+    modelstar upload <file_path>
+        Uploads the file from <file_path> into the cloud location.
+    '''
+    click.echo(
+        f"\n\tChecking file: `{file_path}`")
+
+    abs_file_path = check_file_path(file_path)
+
+    click.echo(
+        f"\n\tUploading file: `{abs_file_path}`\n")
+
+    # TODO: get from session
+    # TODO Add stage name here, or use default user stage
+    # All config options should go into the load_config
+    # also pass in the context and set the stage within the load_config
+    config = load_config('snowflake')
+
+    response = upload_file(config, file_path)
+
+    click.echo(response)
+
+    click.echo(
+        f"\n\tFile available at: `{config.database}.{config.schema}.@{config.stage}`\n")
