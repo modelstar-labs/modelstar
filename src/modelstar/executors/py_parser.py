@@ -1,4 +1,5 @@
 import ast
+from atexit import register
 import os
 from dataclasses import dataclass
 from typing import List
@@ -156,6 +157,12 @@ class ModelstarCall:
             raise ValueError(
                 'FilePathError: `snowflake_path` parameter value missing.')
 
+        if os.path.exists(self.local_path):
+            self.local_path = os.path.abspath(self.local_path)
+        else:
+            raise ValueError(
+                'FilePathError: File with `local_path` does not exist. Tip: Pass the absolute path.')
+
 
 def parse_modelstar_call(node):
     call_name = node.func.id
@@ -183,10 +190,11 @@ def parse_modelstar_call(node):
     return ModelstarCall(name=call_name, local_path=local_path, snowflake_path=snowflake_path)
 
 
-class ModuleParser(ast.NodeVisitor):
-    def __init__(self, file_name: str, module_name: str):
+class ModuleNodeVisitor(ast.NodeVisitor):
+    def __init__(self, file_name: str, module_name: str, function_name: str):
         self.file_name: str = file_name
         self.module_name: str = module_name
+        self.function_name: str = function_name
         self.imports: List[ModuleImport] = []
         self.functions: List[ModuleFunction] = []
         self.calls: List[ModelstarCall] = []
@@ -203,7 +211,8 @@ class ModuleParser(ast.NodeVisitor):
 
     def visit_FunctionDef(self, node):
         parsed_info = parse_function(node, self.file_name, self.module_name)
-        self.functions.append(parsed_info)
+        if parsed_info.name == self.function_name:
+            self.functions.append(parsed_info)
         self.generic_visit(node)
 
     def visit_Call(self, node):
@@ -213,17 +222,41 @@ class ModuleParser(ast.NodeVisitor):
                 self.calls.append(parsed_info)
         self.generic_visit(node)
 
+    def module_checks(self):
 
-def parse_module_nodes(file_path: str) -> ModuleParser:
+        if len(self.functions) != 1:
+            raise ValueError(
+                f"Function `{self.function_name}` not present in {self.file_name}.")
+        else:
+            register_function = self.functions[0]
+            register_function.check_typing()
 
-    file_name = os.path.basename(file_path)
+        read_files_in_module = []
+        for call in self.calls:
+            call.check_paths()
+            if call.name == 'modelstar_read_path':
+                read_files_in_module.append(call)
+
+        return FunctionRegister(function=register_function, read_files=read_files_in_module)
+
+
+@dataclass
+class FunctionRegister():
+    function: ModuleFunction
+    imports: List[ModuleImport] = None
+    read_files: List[ModelstarCall] = None
+
+
+def parse_function_file(abs_file_path: str, file_name: str, function_name: str,) -> FunctionRegister:
+
     module_name, ext_name = file_name.split('.')
 
     assert ext_name == 'py', 'UDFs can only be registers from .py files.'
 
-    visitor = ModuleParser(file_name, module_name)
-    with open(file_path, "r") as source:
-        module = ast.parse(source.read(), file_path)
+    visitor = ModuleNodeVisitor(file_name, module_name, function_name)
+    with open(abs_file_path, "r") as source:
+        module = ast.parse(source.read(), abs_file_path)
         visitor.visit(module)
+        function_register = visitor.module_checks()
 
-    return visitor
+    return function_register

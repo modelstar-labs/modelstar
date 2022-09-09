@@ -29,18 +29,18 @@ class SnowflakeContext:
     def __init__(self, config: SnowflakeConfig):
         self.config = config
 
-    def register_udf(self, file_path: str, function: ModuleFunction):
+    def register_udf(self, file_path: str, function: ModuleFunction, imports: list):
         sql_statements = register_udf_from_file(
-            self.config, file_path, function)
+            self.config, file_path, function, imports)
         response = self.execute_with_context(sql_statements, fetch=5)
 
-        return response
+        return response.print()
 
     def put_file(self, file_path: str):
         sql_statements = put_file_from_local(self.config, file_path)
         response = self.execute_with_context(sql_statements, fetch=5)
 
-        return response
+        return response.print()
 
     def execute_with_context(self, statements, fetch: int = 5):
         # TODO run all the commands within a context manager

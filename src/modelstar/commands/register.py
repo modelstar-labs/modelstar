@@ -1,7 +1,11 @@
 import os
 from pprint import pprint
-from modelstar.executors.py_parser import parse_module_nodes
+from modelstar.executors.py_parser import parse_function_file
 from modelstar.connectors.snowflake.context import SnowflakeContext, SnowflakeConfig
+from dataclasses import dataclass
+from modelstar.executors.py_parser import ModuleFunction, ModuleImport, ModelstarCall
+from typing import List
+from modelstar.connectors.snowflake.modelstar import SNOWFLAKE_FILE_HANDLER_PATH
 
 
 def check_function_path(file_name: str):
@@ -20,43 +24,36 @@ def check_function_path(file_name: str):
     return abs_file_path
 
 
-def parse_function_file(abs_file_path: str, function_name: str, file_name: str):
-    # Get the imports and function list.
-    # send -> abs file path and get all the info about the functions and imports.
-    parsed_nodes = parse_module_nodes(abs_file_path)
-
-    functions_in_modules = []
-    for func in parsed_nodes.functions:
-        functions_in_modules.append(func.name)
-        if function_name == func.name:
-            func.check_typing()
-            register_function = func
-
-    for call in parsed_nodes.calls:
-        call.check_paths()
-        pprint(call)
-
-    if function_name not in functions_in_modules:
-        raise ValueError(
-            f"Function `{function_name}` not present in {file_name}.")
-
-    return register_function
-
-
-def register_function(config, function_name: str, file_name: str):
+def register_function_from_file(config, function_name: str, file_name: str):
     # TODO Add stage name here, or use default user stage
 
     abs_file_path = check_function_path(file_name)
-    register_function = parse_function_file(
-        abs_file_path, function_name, file_name)
+    function_register = parse_function_file(
+        abs_file_path, file_name, function_name)
 
-    return register_function
+    if isinstance(config, SnowflakeConfig):
+        snowflake_context = SnowflakeContext(config)
 
-    # if isinstance(config, SnowflakeConfig):
-    #     snowflake_context = SnowflakeContext(config)
-    #     response = snowflake_context.register_udf(
-    #         file_path=abs_file_path, function=register_function)
-    # else:
-    #     raise ValueError(f'Failed to register function: {function_name}')
+        # If a file load is present upload the file.
+        import_paths_from_stage = []
 
-    # return response.print()
+        for read_file in function_register.read_files:
+            response = snowflake_context.put_file(
+                file_path=read_file.local_path)
+            import_file_name = os.path.basename(read_file.local_path)
+            import_paths_from_stage.append(
+                f'@{config.stage}/{import_file_name}')
+
+        if len(function_register.read_files) > 0:
+            response = snowflake_context.put_file(
+                file_path=SNOWFLAKE_FILE_HANDLER_PATH)
+            import_file_name = os.path.basename(SNOWFLAKE_FILE_HANDLER_PATH)
+            import_paths_from_stage.append(
+                f'@{config.stage}/{import_file_name}')
+
+        response = snowflake_context.register_udf(
+            file_path=abs_file_path, function=function_register.function, imports=import_paths_from_stage)
+    else:
+        raise ValueError(f'Failed to register function: {function_name}')
+
+    return response

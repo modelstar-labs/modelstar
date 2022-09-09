@@ -2,7 +2,7 @@ import click
 import os
 from modelstar.commands.project import initialize_project, check_project_structure
 from modelstar.commands.database import list_databases
-from modelstar.commands.register import register_function
+from modelstar.commands.register import register_function_from_file
 from modelstar.commands.upload import check_file_path, upload_file
 from modelstar.executors.config import load_config
 
@@ -78,7 +78,7 @@ def build(ctx, function_name, file_name):
     # TODO: get from session
     config = load_config('snowflake')
 
-    response = register_function(config, function_name, file_name)
+    response = register_function_from_file(config, function_name, file_name)
 
     click.echo(response)
 
