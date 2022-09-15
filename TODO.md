@@ -20,7 +20,8 @@
     -   [x] import the snowflake_path files into the function imports
     -   [x] import the modelstar file into the function imports
     -   [x] implement the change paths using the modelstar_read...
-    -   [ ] Maybe check if dependencies exist?
+-   [ ] Writing a file
+    
 
 ## Working with entire Tables as dataframes
 
@@ -28,4 +29,7 @@
 
 # MVP V2
 
+**File Handling**
 -   [ ] Upload the file and get the path to the stage automaticall when the function file has a file that is read.
+-   [ ] Maybe check if dependencies exist? (func read file imports)
+-   [ ] snowflake_path check if it is proper as '@stage/file.ext' (func read path)

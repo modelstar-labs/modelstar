@@ -1,5 +1,4 @@
 import click
-import os
 from modelstar.commands.project import initialize_project, check_project_structure
 from modelstar.commands.database import list_databases
 from modelstar.commands.register import register_function_from_file

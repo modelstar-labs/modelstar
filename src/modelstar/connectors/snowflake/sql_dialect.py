@@ -1,4 +1,4 @@
-from modelstar.executors.py_parser import ModuleFunction
+from modelstar.executors.py_parser.module_function import ModuleFunction
 import os
 
 
