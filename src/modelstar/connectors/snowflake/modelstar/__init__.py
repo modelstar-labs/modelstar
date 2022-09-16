@@ -2,6 +2,11 @@ import os
 import sys
 
 try:
+    from .constants import PATH_SYSTEM
+except:
+    PATH_SYSTEM = 'local'
+
+try:
     from .constants import REGISTRY_NAME, REGISTRY_VERSION
 except:
     REGISTRY_NAME = None
@@ -12,43 +17,35 @@ except:
 
 SNOWFLAKE_FILE_HANDLER_PATH = os.path.abspath(__file__)
 
-PATH_SYSTEM = 'snowflake'
-
 SNOWFLAKE_IMPORT_DIRECTORY_NAME = "snowflake_import_directory"
 
 
-def modelstar_read_path(local_path: str = None, snowflake_path: str = None, test_system: str = None) -> str:
-    if test_system == None:
-        if PATH_SYSTEM == 'local':
-            path = local_path
-        elif PATH_SYSTEM == 'snowflake':
-            path = stage_to_dir(snowflake_path)
-        else:
-            path = local_path
+def modelstar_read_path(local_path: str = None, snowflake_path: str = None) -> str:
+    if PATH_SYSTEM == 'local':
+        path = local_path
+    elif PATH_SYSTEM == 'snowflake':
+        path = stage_to_dir(local_path)
     else:
-        if test_system == 'local':
-            path = local_path
-        elif test_system == 'snowflake':
-            path = stage_to_dir(snowflake_path)
-        else:
-            path = local_path
-
+        path = local_path
     return path
 
 
-def modelstar_write_path(file_path: str):
-    return file_path
+def modelstar_write_path(local_path: str):
+    return local_path
 
 
-def stage_to_dir(snowflake_path: str) -> str:
-    # snowflake_path is '@my_stage/file.txt'
+def stage_to_dir(local_path: str) -> str:
+    # local_path is '/connectors/snowflake/modelstar/constants.py'
+    file_name = os.path.basename(local_path)
     import_dir = sys._xoptions[SNOWFLAKE_IMPORT_DIRECTORY_NAME]
 
-    path_strings = snowflake_path.split('/')
-    stage_name = path_strings.pop(0)
+    path_strings = []
 
-    if not stage_name.startswith('@'):
-        raise ValueError('Incorrect snowflake_path string.')
+    # if REGISTRY_NAME is not None:
+    #     path_strings.append(REGISTRY_NAME)
+    # if REGISTRY_VERSION is not None:
+    #     path_strings.append(REGISTRY_VERSION)
+    path_strings.append(file_name)
 
     file_in_stage = '/'.join(path_strings)
     final_path = os.path.join(import_dir, file_in_stage)

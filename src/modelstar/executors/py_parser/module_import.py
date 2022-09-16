@@ -25,7 +25,7 @@ class ModuleImport:
             self.module_type = 'snowflake_imppkg'
         elif self.module == 'modelstar':
             self.module_type = 'modelstar'
-            self.abs_path = SNOWFLAKE_FILE_HANDLER_PATH
+            self.abs_path = os.path.dirname(SNOWFLAKE_FILE_HANDLER_PATH)
         else:
             self.module_type = 'local_imppkg'
             search_dir = os.path.join(os.getcwd(), 'functions')

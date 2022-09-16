@@ -13,9 +13,9 @@ class ModelstarCall:
         if self.local_path == None:
             raise ValueError(
                 'FilePathError: `local_path` parameter value missing.')
-        if self.snowflake_path == None:
-            raise ValueError(
-                'FilePathError: `snowflake_path` parameter value missing.')
+        # if self.snowflake_path == None:
+        #     raise ValueError(
+        #         'FilePathError: `snowflake_path` parameter value missing.')
 
         if os.path.exists(self.local_path):
             self.local_path = os.path.abspath(self.local_path)

@@ -4,6 +4,7 @@ from modelstar.executors.table import TableView
 from modelstar.executors.py_parser.module_function import ModuleFunction
 from .sql_dialect import register_udf_from_file, put_file_from_local
 from typing import List
+import os
 
 
 @dataclass
@@ -36,20 +37,27 @@ class SnowflakeContext:
     def __init__(self, config: SnowflakeConfig):
         self.config = config
 
-    def register_udf(self, file_path: str, function: ModuleFunction, imports: list) -> SnowflakeResponse:
+    def register_udf(self, file_path: str, function: ModuleFunction, imports: list, package_imports: list, stage_path: str = None) -> SnowflakeResponse:
         sql_statements = register_udf_from_file(
-            self.config, file_path, function, imports)
+            self.config, file_path, function, imports, package_imports, stage_path)
         table = self.execute_with_context(sql_statements, fetch=5)
 
         return SnowflakeResponse(table=table)
 
-    def put_file(self, file_path: str) -> SnowflakeResponse:
-        sql_statements = put_file_from_local(self.config, file_path)
+    def put_file(self, file_path: str, stage_path: str = None) -> SnowflakeResponse:
+        sql_statements = put_file_from_local(
+            self.config, file_path, stage_path)
         table = self.execute_with_context(sql_statements, fetch=5)
 
-        return SnowflakeResponse(table=table)
+        file_name = os.path.basename(file_path)
+        if stage_path is not None:
+            file_stage_path = f'@{self.config.stage}/{stage_path}/{file_name}'
+        else:
+            file_stage_path = f'@{self.config.stage}/{file_name}'
 
-    def put_multi_file(self, file_paths: List[str]) -> SnowflakeResponse:
+        return SnowflakeResponse(table=table, info={'file_stage_path': file_stage_path})
+
+    def put_multi_file(self, file_paths: List[str], stage_path: str = None) -> SnowflakeResponse:
         pass
         # sql_statements = put_file_from_local(self.config, file_path)
         # table = self.execute_with_context(sql_statements, fetch=5)
