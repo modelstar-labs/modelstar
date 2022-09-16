@@ -1,6 +1,13 @@
 import os
 import sys
 
+try:
+    from .constants import REGISTRY_NAME, REGISTRY_VERSION
+except:
+    REGISTRY_NAME = None
+    REGISTRY_VERSION = None
+
+
 # https://docs.snowflake.com/en/developer-guide/udf/python/udf-python-creating.html#reading-and-writing-files-with-a-udf-handler
 
 SNOWFLAKE_FILE_HANDLER_PATH = os.path.abspath(__file__)

@@ -16,8 +16,8 @@ class ModuleNodeVisitor(ast.NodeVisitor):
         self.calls: List[ModelstarCall] = []
 
     def visit_Import(self, node):
-        parsed_info = parse_import(node)
-        self.imports.append(parsed_info)
+        for parsed_info in parse_import(node):
+            self.imports.append(parsed_info)
         self.generic_visit(node)
 
     def visit_ImportFrom(self, node):
@@ -53,7 +53,9 @@ class ModuleNodeVisitor(ast.NodeVisitor):
             if call.name == 'modelstar_read_path':
                 read_files_in_module.append(call)
 
-        return FunctionRegister(function=register_function, read_files=read_files_in_module)
+        imports_in_module = self.imports
+
+        return FunctionRegister(function=register_function, read_files=read_files_in_module, imports=imports_in_module)
 
 
 @dataclass

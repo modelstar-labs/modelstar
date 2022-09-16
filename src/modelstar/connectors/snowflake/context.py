@@ -3,6 +3,7 @@ from dataclasses import dataclass, field
 from modelstar.executors.table import TableView
 from modelstar.executors.py_parser.module_function import ModuleFunction
 from .sql_dialect import register_udf_from_file, put_file_from_local
+from typing import List
 
 
 @dataclass
@@ -25,22 +26,35 @@ class SnowflakeConfig:
             return {'user': self.user, 'password': self.password, 'account': self.account, 'warehouse': self.warehouse, 'database': self.database, 'schema': self.schema, 'port': self.port, 'protocol': self.protocol}
 
 
+@dataclass
+class SnowflakeResponse:
+    table: TableView = None
+    info: dict = None
+
+
 class SnowflakeContext:
     def __init__(self, config: SnowflakeConfig):
         self.config = config
 
-    def register_udf(self, file_path: str, function: ModuleFunction, imports: list):
+    def register_udf(self, file_path: str, function: ModuleFunction, imports: list) -> SnowflakeResponse:
         sql_statements = register_udf_from_file(
             self.config, file_path, function, imports)
-        response = self.execute_with_context(sql_statements, fetch=5)
+        table = self.execute_with_context(sql_statements, fetch=5)
 
-        return response.print()
+        return SnowflakeResponse(table=table)
 
-    def put_file(self, file_path: str):
+    def put_file(self, file_path: str) -> SnowflakeResponse:
         sql_statements = put_file_from_local(self.config, file_path)
-        response = self.execute_with_context(sql_statements, fetch=5)
+        table = self.execute_with_context(sql_statements, fetch=5)
 
-        return response.print()
+        return SnowflakeResponse(table=table)
+
+    def put_multi_file(self, file_paths: List[str]) -> SnowflakeResponse:
+        pass
+        # sql_statements = put_file_from_local(self.config, file_path)
+        # table = self.execute_with_context(sql_statements, fetch=5)
+
+        # return SnowflakeResponse(table=table)
 
     def execute_with_context(self, statements, fetch: int = 5):
         # TODO run all the commands within a context manager

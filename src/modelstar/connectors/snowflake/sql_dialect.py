@@ -35,7 +35,7 @@ def put_file_from_local(config, file_path: str):
 
     # TODO add threads to this to make this faster.
     sql_statements.append(f'use {database}.{schema}')
-    sql_statements.append(f'put file://{file_path} @{stage}')
+    sql_statements.append(f'put file://{file_path} @{stage}/func/')
 
     return sql_statements
 
