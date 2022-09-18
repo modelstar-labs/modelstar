@@ -2,14 +2,14 @@ from modelstar.executors.py_parser.module_function import ModuleFunction
 import os
 
 
-def register_udf_from_file(config, file_path: str, function: ModuleFunction, imports: list, package_imports: list, stage_path: str = None):
+def register_udf_from_file(config, file_path: str, function: ModuleFunction, imports: list, package_imports: list, version: str):
     database = config.database
     schema = config.schema
     stage = config.stage
     file_name = os.path.basename(file_path)
 
     import_list = [f"'{x}'" for x in imports]
-    import_list.append(f"'@{stage}/{stage_path}/{file_name}'")
+    import_list.append(f"'@{stage}/{function.name}/{version}/{file_name}'")
     import_list_string = ', '.join(import_list)
 
     package_list = [f"'{x}'" for x in package_imports]
@@ -19,9 +19,9 @@ def register_udf_from_file(config, file_path: str, function: ModuleFunction, imp
     sql_statements = []
 
     sql_statements.append(f'use {database}.{schema}')
-    sql_statements.append(f'put file://{file_path} @{stage}/{stage_path}')
+    sql_statements.append(f'put file://{file_path} @{stage}/{function.name}/{version}')
     sql_statements.append(f"""create or replace function {function.name}({function.sql_param_list()})
-returns {function.returns.type}
+returns {function.returns.sql_type()}
 language python
 runtime_version = '3.8'
 packages = ({package_list_string})
@@ -31,7 +31,7 @@ imports = ({import_list_string});""")
     return sql_statements
 
 
-def put_file_from_local(config, file_path: str, stage_path: str):
+def put_file_from_local(config, file_path: str, stage_path: str = None):
     database = config.database
     schema = config.schema
     stage = config.stage
@@ -44,6 +44,19 @@ def put_file_from_local(config, file_path: str, stage_path: str):
         sql_statements.append(f'put file://{file_path} @{stage}/{stage_path}')
     else:
         sql_statements.append(f'put file://{file_path} @{stage}')
+
+    return sql_statements
+
+
+def clear_function_stage_files(config, function_name: str, version: str):
+    database = config.database
+    schema = config.schema
+    stage = config.stage
+
+    sql_statements = []
+
+    sql_statements.append(f'use {database}.{schema}')
+    sql_statements.append(f'remove @{stage}/{function_name}/{version}')
 
     return sql_statements
 

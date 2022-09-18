@@ -19,6 +19,9 @@ class FunctionReturn:
     '''Class for storing Function Returns.'''
     type: str
 
+    def sql_type(self):
+        return map_py_to_sql_type(self.type)
+
     # SQL returns only one type.
     # https://docs.snowflake.com/en/developer-guide/udf/python/udf-python-designing.html#sql-python-data-type-mappings-for-parameters-and-return-types
 
@@ -36,7 +39,7 @@ class ModuleFunction:
     def sql_param_list(self) -> str:
         sql_sep = ', '
         param_list = [param.name + ' ' +
-                      param.type for param in self.parameters]
+                      map_py_to_sql_type(param.type) for param in self.parameters]
         return sql_sep.join(param_list)
 
     def check_typing(self) -> None:
@@ -89,3 +92,15 @@ def parse_function(node, file_name, module_name):
     func_returns = FunctionReturn(type=ret_type)
 
     return ModuleFunction(name=func_name, docstring=ast.get_docstring(node), parameters=func_params, returns=func_returns, file_name=file_name, module_name=module_name, line_no=func_lineno)
+
+
+def map_py_to_sql_type(py_type: str) -> str:
+    py_to_sql = {'int': 'NUMBER', 'str': 'STRING', 'float': 'FLOAT',
+                 'bool': 'BOOL', 'bytes': 'BINARY', 'list': 'ARRAY', 'dict': 'OBJECT'}
+
+    if py_type in py_to_sql:
+        sql_type = py_to_sql[py_type]
+    else:
+        raise ValueError(f'Un-recognized python type `{py_type}`')
+
+    return sql_type

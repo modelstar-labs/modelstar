@@ -23,7 +23,8 @@ def check_function_path(file_name: str):
 
 
 def register_function_from_file(config, function_name: str, file_name: str):
-    version = 'v3'
+    # TODO Create user flow for add function version number
+    version = 'v1'
 
     # TODO Add stage name here, or use default user stage
     # TODO do the above in the config context
@@ -34,6 +35,9 @@ def register_function_from_file(config, function_name: str, file_name: str):
 
     if isinstance(config, SnowflakeConfig):
         snowflake_context = SnowflakeContext(config)
+
+        snowflake_context.clear_existing_function_version(
+            function=function_register.function, version=version)
 
         put_files_to_stage = []
 
@@ -73,7 +77,7 @@ def register_function_from_file(config, function_name: str, file_name: str):
 
         # Register the function with the imports, packages and stage path
         response = snowflake_context.register_udf(
-            file_path=abs_file_path, function=function_register.function, imports=import_paths_from_stage, package_imports=snowflake_package_imports, stage_path=f'{function_name}/{version}')
+            file_path=abs_file_path, function=function_register.function, imports=import_paths_from_stage, package_imports=snowflake_package_imports, version=version)
     else:
         raise ValueError(f'Failed to register function: {function_name}')
 

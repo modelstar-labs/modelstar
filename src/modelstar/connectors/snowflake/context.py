@@ -2,7 +2,7 @@ import snowflake.connector
 from dataclasses import dataclass, field
 from modelstar.executors.table import TableView
 from modelstar.executors.py_parser.module_function import ModuleFunction
-from .sql_dialect import register_udf_from_file, put_file_from_local
+from .sql_dialect import register_udf_from_file, put_file_from_local, clear_function_stage_files
 from typing import List
 import os
 
@@ -37,12 +37,18 @@ class SnowflakeContext:
     def __init__(self, config: SnowflakeConfig):
         self.config = config
 
-    def register_udf(self, file_path: str, function: ModuleFunction, imports: list, package_imports: list, stage_path: str = None) -> SnowflakeResponse:
+    def register_udf(self, file_path: str, function: ModuleFunction, imports: list, package_imports: list, version: str = None) -> SnowflakeResponse:
+
         sql_statements = register_udf_from_file(
-            self.config, file_path, function, imports, package_imports, stage_path)
+            self.config, file_path, function, imports, package_imports, version)
         table = self.execute_with_context(sql_statements, fetch=5)
 
         return SnowflakeResponse(table=table)
+
+    def clear_existing_function_version(self, function: ModuleFunction, version: str) -> None:
+        sql_statements = clear_function_stage_files(
+            self.config, function_name=function.name, version=version)
+        self.execute_with_context(sql_statements, fetch=None)
 
     def put_file(self, file_path: str, stage_path: str = None) -> SnowflakeResponse:
         sql_statements = put_file_from_local(
