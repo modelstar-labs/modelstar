@@ -1,7 +1,7 @@
 from dataclasses import dataclass
 from gettext import find
 from modelstar.executors.py_parser.implib_stdlib import py38
-from modelstar.executors.py_parser.implib_snowflake import anaconda
+from modelstar.executors.py_parser.implib_snowflake import anaconda, src_alias
 from modelstar.connectors.snowflake.modelstar import SNOWFLAKE_FILE_HANDLER_PATH
 import os
 
@@ -19,6 +19,9 @@ class ModuleImport:
     rel_path: str = None
 
     def check_import(self):
+        if self.module in src_alias:
+            self.module = src_alias[self.module]['alias']
+            
         if self.module in py38:
             self.module_type = 'py38_stdlib'
         elif self.module in anaconda:

@@ -1438,3 +1438,5 @@ anaconda = {
 	'm2w64-zlib': {'version': '1.2.8'},
 	'msys2-conda-epoch': {'version': '20160418'},
 }
+
+src_alias = {'sklearn': {'alias': 'scikit-learn'}}
