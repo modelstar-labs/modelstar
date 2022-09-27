@@ -4,7 +4,7 @@ from modelstar.tasks.database import list_databases
 from modelstar.tasks.register import register_function_from_file, register_procedure_from_file
 from modelstar.tasks.upload import check_file_path, upload_file
 from modelstar.executors.config import load_config
-import os
+from modelstar.utils.path import strip_function_file_pointer
 
 
 @click.group()
@@ -92,65 +92,42 @@ def build(ctx, file_path):
 
 
 @main.command("register")
-# TODO: change to call_type: function, procedure
-@click.argument("function_name", required=True)
-# TODO: change to function_file_pointer
-# file_path:function_name
-@click.argument("file_name", required=True)
+# TODO: ONly accept register_type: function, procedure
+@click.argument("register_type", required=True)
+@click.argument("function_file_pointer", required=True)
 @click.pass_context
-def build(ctx, function_name, file_name):
+def build(ctx, register_type, function_file_pointer):
     '''
     modelstar register <function_name>
         registers the function that is in the functions folder.
+        file_path:function_name
     '''
+
+    file_path, file_folder_path, function_name, file_name = strip_function_file_pointer(
+        function_file_pointer)
+
     click.echo(
-        f"\n\tRegistering function: `{function_name}` from `{file_name}`\n")
+        f"\n\tRegistering {register_type}: `{function_name}` from `{file_name}`\n")
 
     check_project_structure()
 
     # TODO: get from session
     config = load_config('snowflake')
 
-    response = register_function_from_file(config, function_name, file_name)
+    if register_type == 'function':
+        response = register_function_from_file(
+            config, function_name, file_name, file_path)
+        click.echo(response)
+        click.echo(
+            f"\n\tFunction available at: `{config.database}.{config.schema}`\n")
 
-    click.echo(response)
+    elif register_type == 'procedure':
+        response = register_procedure_from_file(
+            config, function_name, file_name, file_path)
+        click.echo(response)
+        click.echo(
+            f"\n\tStored Procedure available at: `{config.database}.{config.schema}`\n")
 
-    click.echo(
-        f"\n\tFunction available at: `{config.database}.{config.schema}`\n")
-
-
-@main.command("procedure")
-# TODO: change to function_file_pointer
-# file_path:function_name
-@click.argument("call_file_pointer", required=True)
-@click.pass_context
-def build(ctx, call_file_pointer):
-    '''
-    modelstar register <function_name>
-        registers the function that is in the functions folder.
-    '''
-
-    pointers = call_file_pointer.split(':')
-
-    file_pointer = pointers[0] + '.py'
-    print(os.path.exists(file_pointer))
-    print(os.path.isfile(file_pointer))
-    call_pointer = pointers[1]
-    file_folder_path = os.path.dirname(os.path.abspath(file_pointer))
-    print(file_folder_path)
-
-    click.echo(
-        f"\n\tRegistering procedure: `{call_pointer}` in `{file_pointer}` \n")
-
-    check_project_structure()
-
-    # TODO: get from session
-    config = load_config('snowflake')
-
-    response = register_procedure_from_file(
-        config, function_name=call_pointer, file_path=os.path.abspath(file_pointer), file_folder_path=file_folder_path)
-
-    click.echo(response)
-
-    click.echo(
-        f"\n\tStored Procedure available at: `{config.database}.{config.schema}`\n")
+    else:
+        raise ValueError(
+            f'`{register_type}` not a valid modelstar register command option.')
