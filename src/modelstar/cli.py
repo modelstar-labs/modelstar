@@ -1,8 +1,8 @@
 import click
-from modelstar.tasks.project import initialize_project, check_project_structure
-from modelstar.tasks.database import list_databases
-from modelstar.tasks.register import register_function_from_file, register_procedure_from_file
-from modelstar.tasks.upload import check_file_path, upload_file
+from modelstar.commands.project import initialize_project, check_project_structure
+from modelstar.commands.database import list_databases
+from modelstar.commands.register import register_function_from_file, register_procedure_from_file
+from modelstar.commands.upload import check_file_path, upload_file
 from modelstar.executors.config import load_config
 from modelstar.utils.path import strip_function_file_pointer
 
@@ -112,6 +112,8 @@ def build(ctx, register_type, function_file_pointer):
     check_project_structure()
 
     # TODO: get from session
+    # TODO Add stage name here, or use default user stage
+    # TODO do the above in the config context
     config = load_config('snowflake')
 
     if register_type == 'function':

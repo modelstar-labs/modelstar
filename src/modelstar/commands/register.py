@@ -5,12 +5,8 @@ from modelstar.utils.zip import zip_local_imports, zip_modelstar_pkg
 
 
 def register_function_from_file(config, function_name: str, file_name: str, file_path: str):
-
     # TODO Create user flow for add function version number
     version = 'v1'
-
-    # TODO Add stage name here, or use default user stage
-    # TODO do the above in the config context
 
     # Register the function with the imports, packages and stage path
     function_register = parse_function_file(
