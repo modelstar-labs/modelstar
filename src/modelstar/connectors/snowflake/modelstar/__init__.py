@@ -1,5 +1,9 @@
 import os
 import sys
+import joblib
+import pickle
+from dataclasses import dataclass
+
 
 try:
     from .constants import PATH_SYSTEM
@@ -13,11 +17,17 @@ except:
     REGISTRY_VERSION = None
 
 
-# https://docs.snowflake.com/en/developer-guide/udf/python/udf-python-creating.html#reading-and-writing-files-with-a-udf-handler
+@dataclass
+class SnowflakeSessionState():
+    session = None
 
+
+# https://docs.snowflake.com/en/developer-guide/udf/python/udf-python-creating.html#reading-and-writing-files-with-a-udf-handler
 SNOWFLAKE_FILE_HANDLER_PATH = os.path.abspath(__file__)
 
 SNOWFLAKE_IMPORT_DIRECTORY_NAME = "snowflake_import_directory"
+
+SNOWFLAKE_SESSION_STATE = SnowflakeSessionState()
 
 
 def modelstar_read_path(local_path: str = None, snowflake_path: str = None) -> str:
@@ -30,8 +40,39 @@ def modelstar_read_path(local_path: str = None, snowflake_path: str = None) -> s
     return path
 
 
-def modelstar_write_path(local_path: str):
-    return local_path
+def modelstar_write_path(local_path: str, write_object):
+
+    file_name = os.path.basename(local_path)
+    _, ext = os.path.splitext(file_name)
+
+    if PATH_SYSTEM == 'local':
+        write_object_file_path = local_path
+    elif PATH_SYSTEM == 'snowflake':
+        stage = "@test"
+        write_object_output_dir = '/tmp'
+        write_object_file_path = os.path.join(
+            write_object_output_dir, file_name)
+    else:
+        pass
+
+    if ext == 'joblib':
+        joblib.dump(write_object, write_object_file_path)
+    elif ext == 'pkl':
+        pickle.dump(write_object, write_object_file_path)
+    else:
+        if ext in ['txt']:
+            pass
+        else:
+            raise ValueError('Unspported file format.')
+
+    if PATH_SYSTEM == 'local':
+        return local_path
+    elif PATH_SYSTEM == 'snowflake':
+        SNOWFLAKE_SESSION_STATE.session.file.put(
+            write_object_file_path, stage, overwrite=True)
+        return f"{stage}/{file_name}"
+    else:
+        pass
 
 
 def stage_to_dir(local_path: str) -> str:
@@ -51,3 +92,9 @@ def stage_to_dir(local_path: str) -> str:
     final_path = os.path.join(import_dir, file_in_stage)
 
     return final_path
+
+
+def modelstar_table_df(table_name: str):
+    table_df = SNOWFLAKE_SESSION_STATE.table(table_name).to_pandas()
+
+    return table_df

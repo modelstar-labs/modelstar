@@ -85,3 +85,10 @@ def register_function_from_file(config, function_name: str, file_name: str):
         return print(response.table.print())
     else:
         return response
+
+
+def register_procedure_from_file(config, function_name: str, file_path: str, file_folder_path: str):    
+    # TODO Create user flow for add function version number
+    version = 'v1'
+
+    return 'hello'

@@ -1,9 +1,10 @@
 import click
-from modelstar.commands.project import initialize_project, check_project_structure
-from modelstar.commands.database import list_databases
-from modelstar.commands.register import register_function_from_file
-from modelstar.commands.upload import check_file_path, upload_file
+from modelstar.tasks.project import initialize_project, check_project_structure
+from modelstar.tasks.database import list_databases
+from modelstar.tasks.register import register_function_from_file, register_procedure_from_file
+from modelstar.tasks.upload import check_file_path, upload_file
 from modelstar.executors.config import load_config
+import os
 
 
 @click.group()
@@ -60,31 +61,6 @@ def session(ctx, target_config):
     click.echo(response)
 
 
-@main.command("register")
-@click.argument("function_name", required=True)
-@click.argument("file_name", required=True)
-@click.pass_context
-def build(ctx, function_name, file_name):
-    '''
-    modelstar register <function_name>
-        registers the function that is in the functions folder.
-    '''
-    click.echo(
-        f"\n\tRegistering function: `{function_name}` from `{file_name}`\n")
-
-    check_project_structure()
-
-    # TODO: get from session
-    config = load_config('snowflake')
-
-    response = register_function_from_file(config, function_name, file_name)
-
-    click.echo(response)
-
-    click.echo(
-        f"\n\tFunction available at: `{config.database}.{config.schema}`\n")
-
-
 @main.command("upload")
 @click.argument("file_path", required=True)
 @click.pass_context
@@ -113,3 +89,68 @@ def build(ctx, file_path):
 
     click.echo(
         f"\n\tFile available at: `{config.database}.{config.schema}.@{config.stage}`\n")
+
+
+@main.command("register")
+# TODO: change to call_type: function, procedure
+@click.argument("function_name", required=True)
+# TODO: change to function_file_pointer
+# file_path:function_name
+@click.argument("file_name", required=True)
+@click.pass_context
+def build(ctx, function_name, file_name):
+    '''
+    modelstar register <function_name>
+        registers the function that is in the functions folder.
+    '''
+    click.echo(
+        f"\n\tRegistering function: `{function_name}` from `{file_name}`\n")
+
+    check_project_structure()
+
+    # TODO: get from session
+    config = load_config('snowflake')
+
+    response = register_function_from_file(config, function_name, file_name)
+
+    click.echo(response)
+
+    click.echo(
+        f"\n\tFunction available at: `{config.database}.{config.schema}`\n")
+
+
+@main.command("procedure")
+# TODO: change to function_file_pointer
+# file_path:function_name
+@click.argument("call_file_pointer", required=True)
+@click.pass_context
+def build(ctx, call_file_pointer):
+    '''
+    modelstar register <function_name>
+        registers the function that is in the functions folder.
+    '''
+
+    pointers = call_file_pointer.split(':')
+
+    file_pointer = pointers[0] + '.py'
+    print(os.path.exists(file_pointer))
+    print(os.path.isfile(file_pointer))
+    call_pointer = pointers[1]
+    file_folder_path = os.path.dirname(os.path.abspath(file_pointer))
+    print(file_folder_path)
+
+    click.echo(
+        f"\n\tRegistering procedure: `{call_pointer}` in `{file_pointer}` \n")
+
+    check_project_structure()
+
+    # TODO: get from session
+    config = load_config('snowflake')
+
+    response = register_procedure_from_file(
+        config, function_name=call_pointer, file_path=os.path.abspath(file_pointer), file_folder_path=file_folder_path)
+
+    click.echo(response)
+
+    click.echo(
+        f"\n\tStored Procedure available at: `{config.database}.{config.schema}`\n")

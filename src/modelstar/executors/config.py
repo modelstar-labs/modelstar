@@ -4,7 +4,7 @@ from modelstar.connectors.snowflake.context import SnowflakeConfig
 
 def load_config(target: str):
     modelstar_config_doc = tomlkit.parse(
-        open('./modelstar_project.toml').read())
+        open('./modelstar.toml').read())
 
     assert target in modelstar_config_doc, f"Missing configuration credentials for: [{target}]"
 
