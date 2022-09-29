@@ -126,7 +126,11 @@ def build(ctx, register_type, function_file_pointer):
     elif register_type == 'procedure':
         response = register_procedure_from_file(
             config, function_name, file_name, file_path)
-        click.echo(response)
+        if isinstance(response, list):
+            for res in response:
+                click.echo(res)
+        else:
+            click.echo(response)
         click.echo(
             f"\n\tStored Procedure available at: `{config.database}.{config.schema}`\n")
 

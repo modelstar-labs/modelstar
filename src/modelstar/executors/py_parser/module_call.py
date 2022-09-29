@@ -35,16 +35,22 @@ def parse_modelstar_call(node):
     snowflake_path = None
 
     for kw in node.keywords:
-        if isinstance(kw.value, ast.Constant):
-            path = kw.value.value
-        else:
-            raise ValueError(
-                'Only constants allowed. Enter the path as a string.')
 
         if kw.arg == 'local_path':
+            if isinstance(kw.value, ast.Constant):
+                path = kw.value.value
+            else:
+                raise ValueError(
+                    'Only constants allowed. Enter the path as a string.')
             local_path = path
 
         if kw.arg == 'snowflake_path':
+            if isinstance(kw.value, ast.Constant):
+                path = kw.value.value
+            else:
+                raise ValueError(
+                    'Only constants allowed. Enter the path as a string.')
+
             snowflake_path = path
 
     return ModelstarCall(name=call_name, local_path=local_path, snowflake_path=snowflake_path)

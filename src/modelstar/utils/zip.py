@@ -39,7 +39,7 @@ def zip_local_imports(zip_list: List[ModuleImport]):
     return zip_file_path
 
 
-def zip_modelstar_pkg(registry_name: str, registry_version: str):
+def zip_modelstar_pkg(registry_name: str, registry_version: str, stage_name: str):
     zip_name = 'modelstar.zip'
     zip_path = os.path.join(os.getcwd(), '.modelstar/.tmp')
     zip_file_path = os.path.join(zip_path, zip_name)
@@ -68,6 +68,7 @@ def zip_modelstar_pkg(registry_name: str, registry_version: str):
 PATH_SYSTEM = 'snowflake'
 REGISTRY_NAME = '{registry_name}'
 REGISTRY_VERSION = '{registry_version}'
+STAGE_NAME = '{stage_name}'
 """
 
     with zipfile.ZipFile(zip_file_path, 'w') as zipf:

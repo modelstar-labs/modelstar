@@ -1,9 +1,9 @@
+import inspect
 import os
 import sys
 import joblib
 import pickle
 from dataclasses import dataclass
-
 
 try:
     from .constants import PATH_SYSTEM
@@ -11,10 +11,11 @@ except:
     PATH_SYSTEM = 'local'
 
 try:
-    from .constants import REGISTRY_NAME, REGISTRY_VERSION
+    from .constants import REGISTRY_NAME, REGISTRY_VERSION, STAGE_NAME
 except:
     REGISTRY_NAME = None
     REGISTRY_VERSION = None
+    STAGE_NAME = None
 
 
 @dataclass
@@ -55,12 +56,12 @@ def modelstar_write_path(local_path: str, write_object):
     else:
         pass
 
-    if ext == 'joblib':
+    if ext == '.joblib':
         joblib.dump(write_object, write_object_file_path)
-    elif ext == 'pkl':
+    elif ext == '.pkl':
         pickle.dump(write_object, write_object_file_path)
     else:
-        if ext in ['txt']:
+        if ext in ['.txt']:
             pass
         else:
             raise ValueError('Unspported file format.')
@@ -68,9 +69,10 @@ def modelstar_write_path(local_path: str, write_object):
     if PATH_SYSTEM == 'local':
         return local_path
     elif PATH_SYSTEM == 'snowflake':
+        write_stage_path = f'@{STAGE_NAME}/{REGISTRY_NAME}/{REGISTRY_VERSION}'
         SNOWFLAKE_SESSION_STATE.session.file.put(
-            write_object_file_path, stage, overwrite=True)
-        return f"{stage}/{file_name}"
+            write_object_file_path, write_stage_path, overwrite=True)
+        return f"{write_stage_path}/{file_name}"
     else:
         pass
 
@@ -95,6 +97,16 @@ def stage_to_dir(local_path: str) -> str:
 
 
 def modelstar_table_df(table_name: str):
-    table_df = SNOWFLAKE_SESSION_STATE.table(table_name).to_pandas()
+    table_df = SNOWFLAKE_SESSION_STATE.session.table(table_name).to_pandas()
 
     return table_df
+
+
+def get_kwargs():
+    frame = inspect.currentframe().f_back
+    keys, _, _, values = inspect.getargvalues(frame)
+    kwargs = {}
+    for key in keys:
+        if key != 'self':
+            kwargs[key] = values[key]
+    return kwargs

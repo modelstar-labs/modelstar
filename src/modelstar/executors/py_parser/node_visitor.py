@@ -48,9 +48,9 @@ class ModuleNodeVisitor(ast.NodeVisitor):
             register_function.check_typing()
 
         read_files_in_module = []
-        for call in self.calls:
-            call.check_paths()
+        for call in self.calls:            
             if call.name == 'modelstar_read_path':
+                call.check_paths()
                 read_files_in_module.append(call)
 
         imports_in_module = self.imports

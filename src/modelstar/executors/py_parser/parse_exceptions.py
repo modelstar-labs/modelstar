@@ -22,7 +22,7 @@ class UDFTypeError(Exception):
         if self.type == 'missing':
             message = f'Types for function argument missing for `{self.function_name}` in `{self.file_name}` at line no. {self.line_no}.'
         elif self.type == 'not-base':
-            message = f'Use only Python base types for UDF functions. Error for `{self.function_name}` in `{self.file_name}` at line no. {self.line_no}.'
+            message = f'Use only accepted Python types for UDF functions. Error for `{self.function_name}` in `{self.file_name}` at line no. {self.line_no}.'
         else:
             message = f'Typing error for `{self.function_name}` in `{self.file_name}` at line no. {self.line_no}.'
         return message

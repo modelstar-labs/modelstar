@@ -4,7 +4,7 @@ from modelstar.executors.py_parser.parse_exceptions import UDFTypeError
 
 # TODO Add support for decimal.Decimal and datetime.(date, time, datetime)
 ACCEPTED_PYTHON_FUNCTION_TYPES = [
-    'str', 'int', 'float', 'list', 'bytes', 'bool', 'dict']
+    'str', 'int', 'float', 'list', 'bytes', 'bool', 'dict', 'DataFrame']
 
 
 @dataclass
@@ -12,6 +12,7 @@ class FunctionParameter:
     '''Class for storing Function Parameters.'''
     name: str
     type: str
+    pos: int
 
 
 @dataclass
@@ -72,14 +73,18 @@ def parse_function(node, file_name, module_name):
     node_args.extend(node.args.kwonlyargs)
 
     func_params = []
+    param_pos = 0
     for arg in node_args:
-
-        if hasattr(arg.annotation, 'id'):
+        if isinstance(arg.annotation, ast.Name):
             param_type = arg.annotation.id
+        elif isinstance(arg.annotation, ast.Attribute):
+            param_type = arg.annotation.attr
         else:
             param_type = None
 
-        func_params.append(FunctionParameter(name=arg.arg, type=param_type))
+        func_params.append(FunctionParameter(name=arg.arg, type=param_type, pos=param_pos))
+
+        param_pos = param_pos + 1
 
     if node.returns is not None:
         if isinstance(node.returns, ast.Name):
@@ -95,8 +100,8 @@ def parse_function(node, file_name, module_name):
 
 
 def map_py_to_sql_type(py_type: str) -> str:
-    py_to_sql = {'int': 'NUMBER', 'str': 'STRING', 'float': 'FLOAT',
-                 'bool': 'BOOL', 'bytes': 'BINARY', 'list': 'ARRAY', 'dict': 'OBJECT'}
+    py_to_sql = {'int': 'NUMBER', 'str': 'STRING', 'float': 'FLOAT', 'bool': 'BOOL',
+                 'bytes': 'BINARY', 'list': 'ARRAY', 'dict': 'OBJECT', 'DataFrame': 'STRING'}
 
     if py_type in py_to_sql:
         sql_type = py_to_sql[py_type]
