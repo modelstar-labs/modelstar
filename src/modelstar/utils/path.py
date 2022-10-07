@@ -7,7 +7,15 @@ def strip_function_file_pointer(function_file_pointer: str):
 
     pointers = function_file_pointer.split(':')
 
-    file_pointer = pointers[0] + '.py'
+    _, file_extension = os.path.splitext(pointers[0])
+
+    if file_extension == '':
+        file_pointer = pointers[0] + '.py'
+    elif file_extension == '.py':
+        file_pointer = pointers[0]
+    else:
+        raise ValueError('Provide a valid `<file_location>:<function_handler>`')
+
     if not os.path.exists(file_pointer):
         raise ValueError(f'File `{file_pointer}` does not exist.')
 
