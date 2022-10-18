@@ -1,5 +1,11 @@
 # Command line interface to work with modelstar
 
+## Installation
+
+```shell
+pip install mdoelstar
+```
+
 ## Project initialization
 
 ```shell
@@ -21,5 +27,5 @@ modelstar use <config_name>
 ## Register a python function to your database and schema
 
 ```shell
-modelstar register addition.py addition
+modelstar register function addition.py:addition
 ```
