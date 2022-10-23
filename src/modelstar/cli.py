@@ -2,9 +2,10 @@ import click
 from modelstar.commands.project import initialize_project, check_project_structure
 from modelstar.commands.database import list_databases
 from modelstar.commands.register import register_function_from_file, register_procedure_from_file
-from modelstar.commands.upload import check_file_path, upload_file
+from modelstar.commands.upload import upload_file
+from modelstar.commands.create import create_table
 from modelstar.executors.config import load_config
-from modelstar.utils.path import strip_function_file_pointer
+from modelstar.utils.path import strip_file_namespace_pointer, check_file_path
 
 
 @click.group()
@@ -48,12 +49,18 @@ def session(ctx, target_config):
         checks if the config.modelstar parameters are right
         connects to the server of snowflake and gets all the database info 
     '''
+    # check if a yaml file is present and if a .modelstar is present. If not make only a .modelstar folder.
     check_project_structure()
 
     click.echo(f"\n\tLoading configuration: [{target_config}]\n")
 
+    # TODO: add this session details to .modelstar/session.yaml
+    # TODO: add all the subsequent calls to first call this to check the session name from session.yaml
+    # TODO: and then add a function that looks at the session config to load the target set with modelstar use
     config = load_config(target_config)
 
+    # TODO: this should be a actual object and we should extract the .print table from this.
+    # as response.prettyprint or just add a __str__ print to this data class for print ithe response.
     response = list_databases(config)
 
     click.echo(
@@ -94,17 +101,17 @@ def build(ctx, file_path):
 @main.command("register")
 # TODO: ONly accept register_type: function, procedure
 @click.argument("register_type", required=True)
-@click.argument("function_file_pointer", required=True)
+@click.argument("file_function_pointer", required=True)
 @click.pass_context
-def build(ctx, register_type, function_file_pointer):
+def build(ctx, register_type, file_function_pointer):
     '''
     modelstar register <function_name>
         registers the function that is in the functions folder.
         file_path:function_name
     '''
 
-    file_path, file_folder_path, function_name, file_name = strip_function_file_pointer(
-        function_file_pointer)
+    file_path, file_folder_path, file_name, function_name = strip_file_namespace_pointer(
+        file_function_pointer)
 
     click.echo(
         f"\n\tRegistering {register_type}: `{function_name}` from `{file_name}`\n")
@@ -137,3 +144,39 @@ def build(ctx, register_type, function_file_pointer):
     else:
         raise ValueError(
             f'`{register_type}` not a valid modelstar register command option.')
+
+
+@main.command("create")
+@click.argument("option", required=True)
+@click.argument("source_name_pointer", required=True)
+@click.pass_context
+def build(ctx, option, source_name_pointer):
+    '''
+    modelstar create <option> <source>
+    modelstar create table project/data/abc.csv:table_name
+    '''
+    click.echo(
+        f"\n  Creating `{option}` from `{source_name_pointer}`")
+
+    abs_file_path, file_folder_path, file_name, table_name = strip_file_namespace_pointer(
+        source_name_pointer)
+
+    # TODO: get from session
+    # TODO Add stage name here, or use default user stage
+    # All config options should go into the load_config
+    # also pass in the context and set the stage within the load_config
+    config = load_config('snowflake')
+
+    if option == 'table':
+        create_table(config, file_path=abs_file_path, table_name=table_name)
+        # click.echo(
+        #     f"\n  Uploading file: `{abs_file_path}`\n")
+
+        # response = upload_file(config, abs_file_path)
+
+        # click.echo(response)
+
+        # click.echo(
+        #     f"\n  File available at: `{config.database}.{config.schema}.@{config.stage}`\n")
+    else:
+        click.echo(f'Create `{option}` is invalid.')

@@ -1,5 +1,5 @@
 import tomlkit
-from modelstar.connectors.snowflake.context import SnowflakeConfig
+from modelstar.connectors.snowflake.context_types import SnowflakeConfig
 
 
 def load_config(target: str):

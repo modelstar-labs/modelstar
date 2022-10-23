@@ -1,36 +1,12 @@
-import snowflake.connector
-from dataclasses import dataclass, field
-from modelstar.executors.table import TableView
-from modelstar.executors.py_parser.module_function import ModuleFunction
-from .sql_dialect import register_udf_from_file, register_procedure_from_file, put_file_from_local, clear_function_stage_files
-from typing import List
 import os
-
-
-@dataclass
-class SnowflakeConfig:
-    user: str
-    account: str
-    password: str = field(repr=False)
-    database: str = field(default=None, repr=False)
-    warehouse: str = field(default=None, repr=False)
-    schema: str = field(default=None, repr=False)
-    role: str = field(default=None, repr=False)
-    stage: str = field(default=None, repr=False)
-    port: str = field(default=None, repr=False)
-    protocol: str = field(default=None, repr=False)
-
-    def to_connector(self) -> dict:
-        if self.protocol is None or self.port is None:
-            return {'user': self.user, 'password': self.password, 'account': self.account, 'warehouse': self.warehouse}
-        else:
-            return {'user': self.user, 'password': self.password, 'account': self.account, 'warehouse': self.warehouse, 'database': self.database, 'schema': self.schema, 'port': self.port, 'protocol': self.protocol}
-
-
-@dataclass
-class SnowflakeResponse:
-    table: TableView = None
-    info: dict = None
+from typing import List
+import snowflake.connector
+from modelstar.utils.response import TableView
+from modelstar.executors.py_parser.module_function import ModuleFunction
+import modelstar.connectors.snowflake.sql_dialect as SQL
+from modelstar.executors.table import TableInfo
+from modelstar.connectors.snowflake.context_types import SnowflakeConfig, SnowflakeResponse, FileFormat
+from pprint import pprint
 
 
 class SnowflakeContext:
@@ -38,30 +14,37 @@ class SnowflakeContext:
         self.config = config
 
     def register_udf(self, file_path: str, function: ModuleFunction, imports: list, package_imports: list, version: str = None) -> SnowflakeResponse:
-
-        sql_statements = register_udf_from_file(
+        sql_statements_0 = SQL.session_use(self.config)
+        sql_statements_1 = SQL.register_udf_from_file(
             self.config, file_path, function, imports, package_imports, version)
-        table = self.execute_with_context(sql_statements, fetch=5)
+        sql_statements = sql_statements_0 + sql_statements_1
+        response_table = self.execute_with_context(sql_statements, fetch=5)
 
-        return SnowflakeResponse(table=table)
+        return SnowflakeResponse(table=response_table)
 
     def register_procedure(self, file_path: str, function: ModuleFunction, imports: list, package_imports: list, version: str = None) -> SnowflakeResponse:
-
-        sql_statements = register_procedure_from_file(
+        sql_statements_0 = SQL.session_use(self.config)
+        sql_statements_1 = SQL.register_procedure_from_file(
             self.config, file_path, function, imports, package_imports, version)
-        table = self.execute_with_context(sql_statements, fetch=5)
+        sql_statements = sql_statements_0 + sql_statements_1
+        response_table = self.execute_with_context(sql_statements, fetch=5)
 
-        return SnowflakeResponse(table=table)
+        return SnowflakeResponse(table=response_table)
 
     def clear_existing_function_version(self, function: ModuleFunction, version: str) -> None:
-        sql_statements = clear_function_stage_files(
+        sql_statements_0 = SQL.session_use(self.config)
+        sql_statements_1 = SQL.clear_function_stage_files(
             self.config, function_name=function.name, version=version)
+        sql_statements = sql_statements_0 + sql_statements_1
         self.execute_with_context(sql_statements, fetch=None)
 
     def put_file(self, file_path: str, stage_path: str = None) -> SnowflakeResponse:
-        sql_statements = put_file_from_local(
+        sql_statements_0 = SQL.session_use(self.config)
+        sql_statements_1 = SQL.put_file_from_local(
             self.config, file_path, stage_path)
-        table = self.execute_with_context(sql_statements, fetch=5)
+
+        sql_statements = sql_statements_0 + sql_statements_1
+        response_table = self.execute_with_context(sql_statements, fetch=5)
 
         file_name = os.path.basename(file_path)
         if stage_path is not None:
@@ -69,14 +52,62 @@ class SnowflakeContext:
         else:
             file_stage_path = f'@{self.config.stage}/{file_name}'
 
-        return SnowflakeResponse(table=table, info={'file_stage_path': file_stage_path})
+        return SnowflakeResponse(table=response_table, info={'file_stage_path': file_stage_path})
+
+    def create_table_from_csv(self, file_path: str, table_info: TableInfo, file_format: FileFormat) -> SnowflakeResponse:
+        '''
+        Operations performed:
+        1. Uploads the file from local to stage using: PUT
+        2. Creates the table with the column types using: CREATE TABLE
+        3. Creates the file format for copying the data from file to table using: CREATE FILE_FORMAT
+        4. Copys the data from stage file into table using: COPY INTO
+        '''
+        sql_statements_0 = SQL.session_use(self.config)
+
+        sql_statements_1 = SQL.put_file_from_local(
+            self.config, file_path=file_path, stage_path=None)
+
+        file_name = os.path.basename(file_path)
+        file_stage_path = f'@{self.config.stage}/{file_name}'
+
+        sql_statements_2 = SQL.create_table(self.config, table_info=table_info)
+
+        sql_statements_3 = SQL.create_file_format(
+            self.config, file_format=file_format)
+
+        sql_statements_4 = SQL.copy_file_into_table(
+            self.config, table_info=table_info, file_stage_path=file_stage_path, file_format=file_format)
+
+        sql_statements = sql_statements_0 + sql_statements_1 + \
+            sql_statements_2 + sql_statements_3 + sql_statements_4
+
+        response_table = self.execute_with_context(sql_statements, fetch=5)
+
+        return SnowflakeResponse(table=response_table)
 
     def put_multi_file(self, file_paths: List[str], stage_path: str = None) -> SnowflakeResponse:
-        pass
-        # sql_statements = put_file_from_local(self.config, file_path)
-        # table = self.execute_with_context(sql_statements, fetch=5)
+        sql_statements_0 = SQL.session_use(self.config)
+        sql_statements_1 = []
 
-        # return SnowflakeResponse(table=table)
+        for file_path in file_paths:
+            sql_statements_1 = sql_statements_1 + \
+                SQL.put_file_from_local(self.config, file_path, stage_path)
+
+        sql_statements = sql_statements_0 + sql_statements_1
+        response_table = self.execute_with_context(sql_statements, fetch=5)
+
+        file_stage_paths = []
+        for file_path in file_paths:
+            file_name = os.path.basename(file_path)
+
+            if stage_path is not None:
+                file_stage_path = f'@{self.config.stage}/{stage_path}/{file_name}'
+            else:
+                file_stage_path = f'@{self.config.stage}/{file_name}'
+
+            file_stage_paths.append(file_stage_path)
+
+        return SnowflakeResponse(table=response_table, info={'file_stage_paths': file_stage_paths})
 
     def execute_with_context(self, statements, fetch: int = 5):
         # TODO run all the commands within a context manager

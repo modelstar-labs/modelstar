@@ -1,34 +1,49 @@
 import os
+from typing import List
 
 
-def strip_function_file_pointer(function_file_pointer: str):
+def strip_file_namespace_pointer(file_namespace_pointer: str):
 
-    function_file_pointer = function_file_pointer.strip()
+    file_namespace_pointer = file_namespace_pointer.strip()
 
-    pointers = function_file_pointer.split(':')
+    pointers = file_namespace_pointer.split(':')
+
+    file_pointer = pointers[0]
 
     _, file_extension = os.path.splitext(pointers[0])
 
+    # if file_extension == '':
+    #     file_pointer = pointers[0] + '.py'
+    # elif file_extension == '.py':
+    #     file_pointer = pointers[0]
+    # else:
+    #     raise ValueError(
+    #         'Provide a valid `<file_location>:<namepsace_pointer>`')
+
     if file_extension == '':
-        file_pointer = pointers[0] + '.py'
-    elif file_extension == '.py':
-        file_pointer = pointers[0]
-    else:
         raise ValueError(
-            'Provide a valid `<file_location>:<function_handler>`')
+            'Provide a valid `<file_location>:<namepsace_pointer>`')
 
-    file_path = os.path.abspath(file_pointer)
+    abs_file_path = check_file_path(file_pointer)
 
-    if not os.path.exists(file_path):
-        raise ValueError(f'File `{file_path}` does not exist.')
+    namespace_pointer = pointers[1]
 
-    if not os.path.isfile(file_path):
-        raise ValueError(f'`{file_path}` not a valid file.')
+    file_name = os.path.basename(abs_file_path)
 
-    function_pointer = pointers[1]
+    file_folder_path = os.path.dirname(abs_file_path)
 
-    file_name = os.path.basename(file_path)
+    return abs_file_path, file_folder_path, file_name, namespace_pointer
 
-    file_folder_path = os.path.dirname(file_path)
 
-    return file_path, file_folder_path, function_pointer, file_name
+def check_file_path(file_path: str) -> str:
+    file_path = file_path.strip()
+    abs_file_path = os.path.abspath(file_path)
+
+    if not os.path.exists(abs_file_path):
+        raise FileNotFoundError(
+            f"Unable to locate {file_path} or it does not exist. Tip: provide an absolute path.")
+
+    if not os.path.isfile(abs_file_path):
+        raise ValueError(f'`{file_path}` is not a valid file.')
+
+    return abs_file_path

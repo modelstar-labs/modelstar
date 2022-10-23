@@ -1,7 +1,8 @@
 from modelstar.executors.py_parser import parse_function_file
-from modelstar.connectors.snowflake.context import SnowflakeContext, SnowflakeConfig, SnowflakeResponse
+from modelstar.connectors.snowflake.context import SnowflakeContext
 from modelstar.connectors.snowflake.modelstar import SNOWFLAKE_FILE_HANDLER_PATH
 from modelstar.utils.zip import zip_local_imports, zip_modelstar_pkg
+from modelstar.connectors.snowflake.context_types import SnowflakeConfig, SnowflakeResponse
 
 
 def register_function_from_file(config, function_name: str, file_name: str, file_path: str):
@@ -49,6 +50,8 @@ def register_function_from_file(config, function_name: str, file_name: str, file
         import_paths_from_stage = []
 
         # If a file load is present upload the file.
+        # TODO: Make this as multi file import
+        # TODO: Remove put_file to have USE ...
         for local_file_path in put_files_to_stage:
             response = snowflake_context.put_file(
                 file_path=local_file_path, stage_path=f'{function_name}/{version}')

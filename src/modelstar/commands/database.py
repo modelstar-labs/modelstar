@@ -1,4 +1,5 @@
-from modelstar.connectors.snowflake.context import SnowflakeContext, SnowflakeConfig
+from modelstar.connectors.snowflake.context import SnowflakeContext
+from modelstar.connectors.snowflake.context_types import SnowflakeConfig
 
 
 def list_databases(config):
