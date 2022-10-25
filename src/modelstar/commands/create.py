@@ -25,6 +25,8 @@ def create_table(config, file_path: str, table_name: str = None):
     else:
         raise ValueError(f'Failed to upload file: {file_path}')
 
+    return response.table.print()
+
 
 def create_file_format(file_name: str, format_type: str = 'csv', format_name: str = None, delimiter: str = ',', skip_header: int = 1) -> FileFormat:
     file_basename, file_extension = os.path.splitext(file_name)

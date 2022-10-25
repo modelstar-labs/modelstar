@@ -1,10 +1,11 @@
 import click
-from modelstar.commands.project import initialize_project, check_project_structure
+from modelstar.commands.project import initialize_project
 from modelstar.commands.database import list_databases
 from modelstar.commands.register import register_function_from_file, register_procedure_from_file
 from modelstar.commands.upload import upload_file
 from modelstar.commands.create import create_table
 from modelstar.executors.config import load_config
+from modelstar.executors.project import check_folder_structure
 from modelstar.utils.path import strip_file_namespace_pointer, check_file_path
 
 
@@ -37,7 +38,7 @@ def init(ctx, projectname: str):
 
     destination = initialize_project(project_name=projectname)
     click.echo(
-        f"\n\tYour project has been created.\n\n\tProject location: {destination}\n")
+        f"\n  Your project has been created.\n\n  Project location: {destination}\n")
 
 
 @main.command("use")
@@ -49,23 +50,23 @@ def session(ctx, target_config):
         checks if the config.modelstar parameters are right
         connects to the server of snowflake and gets all the database info 
     '''
-    # check if a yaml file is present and if a .modelstar is present. If not make only a .modelstar folder.
-    check_project_structure()
+    
+    check_folder_structure()
 
-    click.echo(f"\n\tLoading configuration: [{target_config}]\n")
+    # click.echo(f"\n\tLoading configuration: [{target_config}]\n")
 
-    # TODO: add this session details to .modelstar/session.yaml
-    # TODO: add all the subsequent calls to first call this to check the session name from session.yaml
-    # TODO: and then add a function that looks at the session config to load the target set with modelstar use
-    config = load_config(target_config)
+    # # TODO: add this session details to .modelstar/session.yaml
+    # # TODO: add all the subsequent calls to first call this to check the session name from session.yaml
+    # # TODO: and then add a function that looks at the session config to load the target set with modelstar use
+    # config = load_config(target_config)
 
-    # TODO: this should be a actual object and we should extract the .print table from this.
-    # as response.prettyprint or just add a __str__ print to this data class for print ithe response.
-    response = list_databases(config)
+    # # TODO: this should be a actual object and we should extract the .print table from this.
+    # # as response.prettyprint or just add a __str__ print to this data class for print ithe response.
+    # response = list_databases(config)
 
-    click.echo(
-        f"\n\tShowing available databases for config: [{target_config}]\n")
-    click.echo(response)
+    # click.echo(
+    #     f"\n\tShowing available databases for config: [{target_config}]\n")
+    # click.echo(response)
 
 
 @main.command("upload")
@@ -168,15 +169,12 @@ def build(ctx, option, source_name_pointer):
     config = load_config('snowflake')
 
     if option == 'table':
-        create_table(config, file_path=abs_file_path, table_name=table_name)
-        # click.echo(
-        #     f"\n  Uploading file: `{abs_file_path}`\n")
+        response = create_table(
+            config, file_path=abs_file_path, table_name=table_name)
 
-        # response = upload_file(config, abs_file_path)
+        click.echo(response)
 
-        # click.echo(response)
-
-        # click.echo(
-        #     f"\n  File available at: `{config.database}.{config.schema}.@{config.stage}`\n")
+        click.echo(
+            f"\n  Table: {table_name} available at: `{config.database}.{config.schema}`\n")
     else:
         click.echo(f'Create `{option}` is invalid.')
