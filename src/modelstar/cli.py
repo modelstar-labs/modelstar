@@ -5,7 +5,7 @@ from modelstar.commands.register import register_function_from_file, register_pr
 from modelstar.commands.upload import upload_file
 from modelstar.commands.create import create_table
 from modelstar.executors.config import set_session, load_config
-from modelstar.executors.project import check_folder_structure
+from modelstar.executors.project import check_project_folder_structure
 from modelstar.utils.path import strip_file_namespace_pointer, check_file_path
 
 
@@ -51,12 +51,15 @@ def session(ctx, target_config):
         connects to the server of snowflake and gets all the database info 
     '''
 
-    check_folder_structure()
+    check_project_folder_structure()
 
+    # TODO each stdout should go into its respective modelstar.command .. and should reference a log object
+    #  which checks the environment for logging options
     click.echo(f"\n  Setting session with configuration: {target_config}")
 
     set_session(target_config)
 
+    # TODO: Pass in the context to set the optional stage, db, warehouse and all in runtime.
     config = load_config()
     click.echo(f"\n  Loaded session: {config.name}")
 
@@ -64,7 +67,7 @@ def session(ctx, target_config):
 
     click.echo(
         f"\n  Showing available databases for config: {target_config}")
-    
+
     click.echo(response)
 
 
@@ -76,6 +79,7 @@ def build(ctx, file_path):
     modelstar upload <file_path>
         Uploads the file from <file_path> into the cloud location.
     '''
+
     click.echo(
         f"\n\tChecking file: `{file_path}`")
 
@@ -84,11 +88,8 @@ def build(ctx, file_path):
     click.echo(
         f"\n\tUploading file: `{abs_file_path}`\n")
 
-    # TODO: get from session
-    # TODO Add stage name here, or use default user stage
-    # All config options should go into the load_config
-    # also pass in the context and set the stage within the load_config
-    config = load_config('snowflake')
+    check_project_folder_structure()
+    config = load_config()
 
     response = upload_file(config, file_path)
 
@@ -116,12 +117,8 @@ def build(ctx, register_type, file_function_pointer):
     click.echo(
         f"\n\tRegistering {register_type}: `{function_name}` from `{file_name}`\n")
 
-    check_project_structure()
-
-    # TODO: get from session
-    # TODO Add stage name here, or use default user stage
-    # TODO do the above in the config context
-    config = load_config('snowflake')
+    check_project_folder_structure()
+    config = load_config()
 
     if register_type == 'function':
         response = register_function_from_file(
@@ -161,11 +158,8 @@ def build(ctx, option, source_name_pointer):
     abs_file_path, file_folder_path, file_name, table_name = strip_file_namespace_pointer(
         source_name_pointer)
 
-    # TODO: get from session
-    # TODO Add stage name here, or use default user stage
-    # All config options should go into the load_config
-    # also pass in the context and set the stage within the load_config
-    config = load_config('snowflake')
+    check_project_folder_structure()
+    config = load_config()
 
     if option == 'table':
         response = create_table(

@@ -1,7 +1,7 @@
 import os
 
 
-def check_folder_structure():
+def check_project_folder_structure():
     # os.walk to get files and dirs: https://www.tutorialspoint.com/python/os_walk.htm
 
     cwd = os.getcwd()
