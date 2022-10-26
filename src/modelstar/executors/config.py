@@ -40,14 +40,13 @@ config_schema = {
 }
 
 
-def set_session(config_name: str):
+def set_session(config_name: str) -> None:
     with open('modelstar.config.yaml') as doc:
         modelstar_config_doc = yaml.load(doc, Loader=SafeLoader)
 
     assert config_name in [ss['name'] for ss in modelstar_config_doc['sessions']
                            ], f"Missing session configuration for: `{config_name}`"
 
-    # TODO impose type check to the session configuration
     for config in modelstar_config_doc['sessions']:
         session_name = config.get('name')
         if session_name == config_name:
@@ -64,8 +63,6 @@ def set_session(config_name: str):
                 yaml.dump({'session': config}, session_file,
                           sort_keys=False, default_flow_style=False)
 
-    # TODO Load from file the sessions
-
 
 def load_config() -> SnowflakeConfig:
 
@@ -74,11 +71,11 @@ def load_config() -> SnowflakeConfig:
 
     assert 'session' in session_doc, 'No session has been initialized. You must initialize a session using  `modelstar use <session_name>`.'
 
-    # TODO impose type check to the session configuration
     session_info = session_doc.get('session')
     session_config = session_info.get('config')
 
-    assert session_info.get('connector') == 'snowflake', 'Connectors supprted at this moment is only `snowflake`.'
+    assert session_info.get(
+        'connector') == 'snowflake', 'Connectors supprted at this moment is only `snowflake`.'
     validate(instance=session_config, schema=config_schema)
 
     account = session_config.get("account")

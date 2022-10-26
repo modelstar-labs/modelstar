@@ -62,10 +62,7 @@ def register_function_from_file(config, function_name: str, file_name: str, file
     else:
         raise ValueError(f'Failed to register function: {function_name}')
 
-    if isinstance(response, SnowflakeResponse):
-        return print(response.table.print())
-    else:
-        return response
+    return response
 
 
 def register_procedure_from_file(config, function_name: str, file_name: str, file_path: str):
@@ -124,7 +121,4 @@ def register_procedure_from_file(config, function_name: str, file_name: str, fil
     else:
         raise ValueError(f'Failed to register function: {function_name}')
 
-    if isinstance(response, SnowflakeResponse):
-        return print(response.table.print())
-    else:
-        return response
+    return response

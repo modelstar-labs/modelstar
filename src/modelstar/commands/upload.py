@@ -9,4 +9,4 @@ def upload_file(config, file_path: str):
     else:
         raise ValueError(f'Failed to upload file: {file_path}')
 
-    return response.table.print()
+    return response

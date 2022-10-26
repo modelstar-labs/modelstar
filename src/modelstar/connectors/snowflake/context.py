@@ -1,17 +1,23 @@
 import os
-from typing import List
+from typing import List, Union
 import snowflake.connector
 from modelstar.utils.response import TableView
 from modelstar.executors.py_parser.module_function import ModuleFunction
 import modelstar.connectors.snowflake.sql_dialect as SQL
 from modelstar.executors.table import TableInfo
 from modelstar.connectors.snowflake.context_types import SnowflakeConfig, SnowflakeResponse, FileFormat
-from pprint import pprint
 
 
 class SnowflakeContext:
     def __init__(self, config: SnowflakeConfig):
         self.config = config
+
+    def show_databases(self) -> SnowflakeResponse:
+        sql_statements = ['SHOW DATABASES']
+        response_table = self.execute_with_context(sql_statements, fetch='all')
+        response_table.display_cols = ['created_on', 'name', 'origin', 'owner']
+
+        return SnowflakeResponse(table=response_table)
 
     def register_udf(self, file_path: str, function: ModuleFunction, imports: list, package_imports: list, version: str = None) -> SnowflakeResponse:
         sql_statements_0 = SQL.session_use(self.config)
@@ -109,7 +115,7 @@ class SnowflakeContext:
 
         return SnowflakeResponse(table=response_table, info={'file_stage_paths': file_stage_paths})
 
-    def execute_with_context(self, statements, fetch: int = 5):
+    def execute_with_context(self, statements, fetch: Union[int, str] = 5):
         # TODO run all the commands within a context manager
         # https://docs.snowflake.com/en/user-guide/python-connector-example.html#using-context-manager-to-connect-and-control-transactions
         # https://stackoverflow.com/questions/72647841/how-to-wrap-each-method-in-a-class-with-a-context-manager
@@ -125,9 +131,14 @@ class SnowflakeContext:
             else:
                 cur.execute(stmt)
             if fetch is not None:
-                table = cur.fetchmany(fetch)
-                table_metadata = [col for col in cur.description]
-                header = [col.name for col in table_metadata]
+                if isinstance(fetch, int):
+                    table = cur.fetchmany(fetch)
+                    table_metadata = [col for col in cur.description]
+                    header = [col.name for col in table_metadata]
+                elif fetch == 'all':
+                    table = cur.fetchall()
+                    table_metadata = [col for col in cur.description]
+                    header = [col.name for col in table_metadata]
             con.commit()
         except Exception as e:
             con.rollback()

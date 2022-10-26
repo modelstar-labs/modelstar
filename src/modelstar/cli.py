@@ -1,4 +1,5 @@
 import click
+from modelstar import logger
 from modelstar.commands.project import initialize_project
 from modelstar.commands.database import list_databases
 from modelstar.commands.register import register_function_from_file, register_procedure_from_file
@@ -28,17 +29,18 @@ def main(ctx, database, schema, stage, warehouse):
 
 
 @main.command("init")
-@click.argument("projectname", required=True, type=str)
+@click.argument("project_name", required=True, type=str)
 @click.pass_context
-def init(ctx, projectname: str):
+def init(ctx, project_name: str):
     '''
     modelstar init <project_name>/<. = current folder name>
-    creates a folder with the project name using a project template    
+        Creates a folder with the project name using a project template    
     '''
 
-    destination = initialize_project(project_name=projectname)
-    click.echo(
-        f"\n  Your project has been created.\n\n  Project location: {destination}\n")
+    project_path = initialize_project(project_name=project_name)
+
+    logger.echo('Your project has been created.')
+    logger.echo('Project location', detail=project_path)
 
 
 @main.command("use")
@@ -46,29 +48,25 @@ def init(ctx, projectname: str):
 @click.pass_context
 def session(ctx, target_config):
     '''
-    modelstar use target_confg
-        checks if the config.modelstar parameters are right
-        connects to the server of snowflake and gets all the database info 
+    modelstar use <target_config>
+        Checks if the config.modelstar parameters are right
+        Connects to the server of snowflake and gets all the database info 
     '''
 
     check_project_folder_structure()
 
-    # TODO each stdout should go into its respective modelstar.command .. and should reference a log object
-    #  which checks the environment for logging options
-    click.echo(f"\n  Setting session with configuration: {target_config}")
+    logger.echo('Setting session with configuration', detail=target_config)
 
     set_session(target_config)
 
     # TODO: Pass in the context to set the optional stage, db, warehouse and all in runtime.
     config = load_config()
-    click.echo(f"\n  Loaded session: {config.name}")
+    logger.echo('Loaded session', detail=config.name)
 
     response = list_databases(config)
 
-    click.echo(
-        f"\n  Showing available databases for config: {target_config}")
-
-    click.echo(response)
+    logger.echo('Showing available databases for config', detail=config.name)
+    logger.echo(response)
 
 
 @main.command("upload")
@@ -80,27 +78,25 @@ def build(ctx, file_path):
         Uploads the file from <file_path> into the cloud location.
     '''
 
-    click.echo(
-        f"\n\tChecking file: `{file_path}`")
+    logger.echo('Checking file', detail=file_path)
 
     abs_file_path = check_file_path(file_path)
 
-    click.echo(
-        f"\n\tUploading file: `{abs_file_path}`\n")
+    logger.echo('Uploading file', detail=abs_file_path)
 
     check_project_folder_structure()
     config = load_config()
 
     response = upload_file(config, file_path)
 
-    click.echo(response)
+    logger.echo(response)
 
-    click.echo(
-        f"\n\tFile available at: `{config.database}.{config.schema}.@{config.stage}`\n")
+    logger.echo('File available at',
+                detail=f'{config.database}.{config.schema}.@{config.stage}')
 
 
 @main.command("register")
-# TODO: ONly accept register_type: function, procedure
+# TODO: Only accept register_type: function, procedure
 @click.argument("register_type", required=True)
 @click.argument("file_function_pointer", required=True)
 @click.pass_context
@@ -114,8 +110,8 @@ def build(ctx, register_type, file_function_pointer):
     file_path, file_folder_path, file_name, function_name = strip_file_namespace_pointer(
         file_function_pointer)
 
-    click.echo(
-        f"\n\tRegistering {register_type}: `{function_name}` from `{file_name}`\n")
+    logger.echo(
+        f"Registering {register_type} as `{function_name}` from `{file_name}`")
 
     check_project_folder_structure()
     config = load_config()
@@ -123,20 +119,18 @@ def build(ctx, register_type, file_function_pointer):
     if register_type == 'function':
         response = register_function_from_file(
             config, function_name, file_name, file_path)
-        click.echo(response)
-        click.echo(
-            f"\n\tFunction available at: `{config.database}.{config.schema}`\n")
+        logger.echo(response)
+        # TODO: Add this info to the response
+        logger.echo("Function available at",
+                    detail=f"`{config.database}.{config.schema}`")
 
     elif register_type == 'procedure':
         response = register_procedure_from_file(
             config, function_name, file_name, file_path)
-        if isinstance(response, list):
-            for res in response:
-                click.echo(res)
-        else:
-            click.echo(response)
-        click.echo(
-            f"\n\tStored Procedure available at: `{config.database}.{config.schema}`\n")
+        logger.echo(response)
+        # TODO: Add this info to the response
+        logger.echo("Stored Procedure available at",
+                    detail=f"`{config.database}.{config.schema}`")
 
     else:
         raise ValueError(
@@ -152,11 +146,11 @@ def build(ctx, option, source_name_pointer):
     modelstar create <option> <source>
     modelstar create table project/data/abc.csv:table_name
     '''
-    click.echo(
-        f"\n  Creating `{option}` from `{source_name_pointer}`")
 
     abs_file_path, file_folder_path, file_name, table_name = strip_file_namespace_pointer(
         source_name_pointer)
+
+    logger.echo(f"Creating `{option}` as `{table_name}` from `{file_name}`")
 
     check_project_folder_structure()
     config = load_config()
@@ -165,9 +159,9 @@ def build(ctx, option, source_name_pointer):
         response = create_table(
             config, file_path=abs_file_path, table_name=table_name)
 
-        click.echo(response)
+        logger.echo(response)
 
-        click.echo(
-            f"\n  Table: {table_name} available at: `{config.database}.{config.schema}`\n")
+        logger.echo(f"Table: {table_name} available at",
+                    detail=f"`{config.database}.{config.schema}`")
     else:
-        click.echo(f'Create `{option}` is invalid.')
+        raise ValueError(f'`Create `{option}` is invalid.')

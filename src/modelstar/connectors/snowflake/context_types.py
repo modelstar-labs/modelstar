@@ -29,6 +29,11 @@ class SnowflakeResponse:
     table: TableView = None
     info: dict = None
 
+    # TODO
+    # def __repr__(self):
+    #     kws = [f"{key}={value!r}" for key, value in self.__dict__.items()]
+    #     return "{}({})".format(type(self).__name__, ", ".join(kws))
+
 
 @dataclass
 class FileFormat:

@@ -9,18 +9,19 @@ class TableView():
     metadata: list = field(repr=False)
     table: list = field(repr=False)
     name: str = field(default=None)
+    display_cols: list = field(default=None, repr=False)
     _datetime_format: str = field(default='%b %d, %Y - %H:%M', repr=False)
 
-    def print(self, cols: list = None):
+    def print(self):
         LOCAL_TIMEZONE = datetime.datetime.now().astimezone().tzinfo
 
         formatted_table = []
 
-        if cols is not None:
+        if self.display_cols is not None:
             col_idx_select = []
             formatted_header = []
             for idx, item in enumerate(self.header):
-                if item in cols:
+                if item in self.display_cols:
                     col_idx_select.append(idx)
                     formatted_header.append(item)
             for row in self.table:
