@@ -110,6 +110,8 @@ def build(ctx, register_type, file_function_pointer):
     file_path, file_folder_path, file_name, function_name = strip_file_namespace_pointer(
         file_function_pointer)
 
+    version = 'V1'
+
     logger.echo(
         f"Registering {register_type} as `{function_name}` from `{file_name}`")
 
@@ -118,7 +120,7 @@ def build(ctx, register_type, file_function_pointer):
 
     if register_type == 'function':
         response = register_function_from_file(
-            config, function_name, file_name, file_path)
+            config, function_name, file_name, file_path, version=version)
         logger.echo(response)
         # TODO: Add this info to the response
         logger.echo("Function available at",
@@ -126,7 +128,7 @@ def build(ctx, register_type, file_function_pointer):
 
     elif register_type == 'procedure':
         response = register_procedure_from_file(
-            config, function_name, file_name, file_path)
+            config, function_name, file_name, file_path, version=version)
         logger.echo(response)
         # TODO: Add this info to the response
         logger.echo("Stored Procedure available at",

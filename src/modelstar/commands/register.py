@@ -5,9 +5,7 @@ from modelstar.utils.zip import zip_local_imports, zip_modelstar_pkg
 from modelstar.connectors.snowflake.context_types import SnowflakeConfig, SnowflakeResponse
 
 
-def register_function_from_file(config, function_name: str, file_name: str, file_path: str):
-    # TODO Create user flow for add function version number
-    version = 'v1'
+def register_function_from_file(config, function_name: str, file_name: str, file_path: str, version: str = 'V1'):
 
     # Register the function with the imports, packages and stage path
     function_register = parse_function_file(
@@ -65,9 +63,7 @@ def register_function_from_file(config, function_name: str, file_name: str, file
     return response
 
 
-def register_procedure_from_file(config, function_name: str, file_name: str, file_path: str):
-    # TODO Create user flow for add function version number
-    version = 'v1'
+def register_procedure_from_file(config, function_name: str, file_name: str, file_path: str, version: str = 'V1'):
 
     # Register the function with the imports, packages and stage path
     function_register = parse_function_file(
