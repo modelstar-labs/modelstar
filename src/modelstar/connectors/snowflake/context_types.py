@@ -5,14 +5,15 @@ from modelstar.utils.response import TableView
 
 @dataclass
 class SnowflakeConfig:
+    name: str
     user: str
     account: str
     password: str = field(repr=False)
-    database: str = field(default=None, repr=False)
-    warehouse: str = field(default=None, repr=False)
-    schema: str = field(default=None, repr=False)
+    database: str = field(repr=False)
+    schema: str = field(repr=False)
+    stage: str = field(repr=False)
+    warehouse: str = field(repr=False)
     role: str = field(default=None, repr=False)
-    stage: str = field(default=None, repr=False)
     port: str = field(default=None, repr=False)
     protocol: str = field(default=None, repr=False)
 

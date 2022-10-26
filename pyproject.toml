@@ -17,6 +17,7 @@ tabulate = "^0.8.10"
 joblib = "^1.2.0"
 pandas = "^1.5.1"
 PyYAML = "^6.0"
+jsonschema = "^4.16.0"
 
 [tool.poetry.dev-dependencies]
 pytest = "^5.2"

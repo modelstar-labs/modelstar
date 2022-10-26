@@ -4,7 +4,7 @@ from modelstar.commands.database import list_databases
 from modelstar.commands.register import register_function_from_file, register_procedure_from_file
 from modelstar.commands.upload import upload_file
 from modelstar.commands.create import create_table
-from modelstar.executors.config import load_config
+from modelstar.executors.config import set_session, load_config
 from modelstar.executors.project import check_folder_structure
 from modelstar.utils.path import strip_file_namespace_pointer, check_file_path
 
@@ -50,23 +50,22 @@ def session(ctx, target_config):
         checks if the config.modelstar parameters are right
         connects to the server of snowflake and gets all the database info 
     '''
-    
+
     check_folder_structure()
 
-    # click.echo(f"\n\tLoading configuration: [{target_config}]\n")
+    click.echo(f"\n  Setting session with configuration: {target_config}")
 
-    # # TODO: add this session details to .modelstar/session.yaml
-    # # TODO: add all the subsequent calls to first call this to check the session name from session.yaml
-    # # TODO: and then add a function that looks at the session config to load the target set with modelstar use
-    # config = load_config(target_config)
+    set_session(target_config)
 
-    # # TODO: this should be a actual object and we should extract the .print table from this.
-    # # as response.prettyprint or just add a __str__ print to this data class for print ithe response.
-    # response = list_databases(config)
+    config = load_config()
+    click.echo(f"\n  Loaded session: {config.name}")
 
-    # click.echo(
-    #     f"\n\tShowing available databases for config: [{target_config}]\n")
-    # click.echo(response)
+    response = list_databases(config)
+
+    click.echo(
+        f"\n  Showing available databases for config: {target_config}")
+    
+    click.echo(response)
 
 
 @main.command("upload")
