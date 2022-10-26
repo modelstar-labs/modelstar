@@ -6,8 +6,7 @@ from modelstar.connectors.snowflake.utils import py_to_snow_type
 
 
 @dataclass
-class TableColumnType:
-    # TODO: check what to call the column name as as for a table
+class TableColumn:
     name: str
     py_type: str
     snow_type: str = None
@@ -21,7 +20,7 @@ class TableColumnType:
 @dataclass
 class TableInfo():
     name: str
-    columns: List[TableColumnType]
+    columns: List[TableColumn]
 
 
 def table_info_from_csv(file_path: str, table_name: str = None) -> TableInfo:
@@ -53,6 +52,6 @@ def col_types_from_csv(file_path: str):
             raise ValueError(
                 f'`{os.path.basename(file_path)}` contains data type that is not currently supported or in invalid.')
 
-        col_types.append(TableColumnType(name=col_name, py_type=col_py_type))
+        col_types.append(TableColumn(name=col_name, py_type=col_py_type))
 
     return col_types

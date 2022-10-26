@@ -49,7 +49,6 @@ def register_function_from_file(config, function_name: str, file_name: str, file
 
         # If a file load is present upload the file.
         # TODO: Make this as multi file import
-        # TODO: Remove put_file to have USE ...
         for local_file_path in put_files_to_stage:
             response = snowflake_context.put_file(
                 file_path=local_file_path, stage_path=f'{function_name}/{version}')
@@ -72,7 +71,6 @@ def register_procedure_from_file(config, function_name: str, file_name: str, fil
     if isinstance(config, SnowflakeConfig):
         snowflake_context = SnowflakeContext(config)
 
-        # TODO: check this for procedure and uncomment
         snowflake_context.clear_existing_function_version(
             function=function_register.function, version=version)
 

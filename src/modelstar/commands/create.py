@@ -1,14 +1,11 @@
 import os
-import pandas as pd
 from modelstar.connectors.snowflake.context import SnowflakeContext
-from modelstar.connectors.snowflake.context_types import FileFormat, SnowflakeConfig
+from modelstar.connectors.snowflake.context_types import FileFormat, SnowflakeConfig, SnowflakeResponse
 from modelstar.executors.table import table_info_from_csv
 
 
-def create_table(config, file_path: str, table_name: str = None):
-    # TODO: get the file attributes and types using a dataframe. after loading csv.
-    # create a file format in the stage: csv_file_name
-    # copy the data into the table from the file.
+def create_table(config, file_path: str, table_name: str = None) -> SnowflakeResponse:
+
     _, file_extension = os.path.splitext(file_path)
 
     if file_extension == '.csv':

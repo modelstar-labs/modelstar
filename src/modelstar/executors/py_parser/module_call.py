@@ -29,7 +29,6 @@ def parse_modelstar_call(node):
 
     # Make sure the args are none:
     # TODO: Raise Error when args are entered instead of keywords.
-    # pprint([ast.dump(arg) for arg in node.args])
 
     local_path = None
     snowflake_path = None

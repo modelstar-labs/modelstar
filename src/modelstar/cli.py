@@ -135,6 +135,7 @@ def build(ctx, register_type, file_function_pointer):
                     detail=f"`{config.database}.{config.schema}`")
 
     else:
+        # TODO Make custom error for these.
         raise ValueError(
             f'`{register_type}` not a valid modelstar register command option.')
 
@@ -166,4 +167,5 @@ def build(ctx, option, source_name_pointer):
         logger.echo(f"Table: {table_name} available at",
                     detail=f"`{config.database}.{config.schema}`")
     else:
+        # TODO Make custom error for these.
         raise ValueError(f'`Create `{option}` is invalid.')
