@@ -1,14 +1,17 @@
-from modelstar import modelstar_read_path, modelstar_write_path
+'''
+Test: 
+modelstar register function /functions/example:find_capital
+'''
+
+from modelstar import modelstar_read_path
 import pandas as pd
 
 FILE_1 = modelstar_read_path(
-    local_path='/Users/adithya/projects/modelstar-org/test/test-project/data/country-capitals.csv')
+    local_path='/Users/adithya/projects/modelstar-org/test/test-project/samples/data_functions/country-capitals.csv')
 
 
 def find_capital(country_name: str) -> str:
     '''
-    SQL Query test:
-
     CREATE TABLE clients (
         client_id int,
         client_country string

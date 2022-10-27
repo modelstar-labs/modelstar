@@ -7,44 +7,21 @@ This is a [modelstar](https://modelstar.io) project created using a Snowflake pr
 Initialize your modelstar project using
 
 ```shell
-modelstar init project-name
+modelstar init <project_name>
 ```
 
 ## Add crendentials to your your project
 
-Edit the `modelstar.toml` file inside your project.
-
-```toml
-[snowflake]
-
-account = "<account>" 
-username = "<username>" 
-password = "<password>" 
-role = "<role>"
-database = "<database>" 
-schema = "<schema>"
-warehouse = "<warehouse>"
-stage = "<stage>" 
-```
+Edit the `modelstar.config.yaml` file inside your project to configure your datawarehouse.
 
 ## Start your modelstar session
 
 ```shell
-modelstar use snowflake
+modelstar use <session_name>
 ```
 
 ## Register the sample Python UDF
 
 ```shell
 modelstar register function functions/find_capital.py:find_capital
-```
-
-## Append yout `.gitignore` to setup for `modelstar`
-
-Append the following into your git
-
-```
-# Modelstar
-.modelstar/
-modelstar.toml
 ```
