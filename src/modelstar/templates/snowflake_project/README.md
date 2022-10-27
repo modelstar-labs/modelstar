@@ -20,8 +20,25 @@ Edit the `modelstar.config.yaml` file inside your project to configure your data
 modelstar use <session_name>
 ```
 
+## Create a sample table
+
+```shell
+modelstar create table samples/functions/clients.csv:clients
+```
+
 ## Register the sample Python UDF
 
 ```shell
-modelstar register function functions/find_capital.py:find_capital
+modelstar register function samples/functions/find_capital.py:find_capital
 ```
+
+## Run a sample query
+
+```shell
+modelstar run 'SELECT * FROM CLIENTS'
+```
+
+```shell
+modelstar run 'SELECT CLIENT_ID, CLIENT_COUNTRY, find_capital(CLIENT_COUNTRY) as CLIENT_CITY FROM CLIENTS'
+```
+

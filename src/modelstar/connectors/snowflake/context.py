@@ -12,6 +12,22 @@ class SnowflakeContext:
     def __init__(self, config: SnowflakeConfig):
         self.config = config
 
+    def run_sql(self, statements: Union[str, list]):
+        sql_statements_0 = SQL.session_use(self.config)
+
+        if isinstance(statements, str):
+            sql_statements_1 = [statements]
+        elif isinstance(statements, list):
+            sql_statements_1 = statements
+        else:
+            raise ValueError(f'Cannot execute {statements}')
+
+        sql_statements = sql_statements_0 + sql_statements_1
+
+        response_table = self.execute_with_context(sql_statements, fetch=20)
+
+        return SnowflakeResponse(table=response_table)
+
     def show_databases(self) -> SnowflakeResponse:
         sql_statements = ['SHOW DATABASES']
         response_table = self.execute_with_context(sql_statements, fetch='all')
@@ -88,6 +104,8 @@ class SnowflakeContext:
             sql_statements_2 + sql_statements_3 + sql_statements_4
 
         response_table = self.execute_with_context(sql_statements, fetch=5)
+        response_table.display_cols = [
+            'file', 'status', 'rows_parsed', 'rows_loaded']
 
         return SnowflakeResponse(table=response_table)
 

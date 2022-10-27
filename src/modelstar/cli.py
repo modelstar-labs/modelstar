@@ -5,6 +5,7 @@ from modelstar.commands.database import list_databases
 from modelstar.commands.register import register_function_from_file, register_procedure_from_file
 from modelstar.commands.upload import upload_file
 from modelstar.commands.create import create_table
+from modelstar.commands.run import run_sql
 from modelstar.executors.config import set_session, load_config
 from modelstar.executors.project import check_project_folder_structure
 from modelstar.utils.path import strip_file_namespace_pointer, check_file_path
@@ -169,3 +170,24 @@ def build(ctx, option, source_name_pointer):
     else:
         # TODO Make custom error for these.
         raise ValueError(f'`Create `{option}` is invalid.')
+
+
+@main.command("run")
+@click.argument("sql", required=True)
+@click.pass_context
+def build(ctx, sql):
+    '''
+    modelstar create <option> <source>
+    modelstar create table project/data/abc.csv:table_name
+    '''
+
+    check_project_folder_structure()
+    config = load_config()
+
+    logger.echo('Loaded session', detail=config.name)
+
+    logger.echo('Running SQL')
+
+    response = run_sql(config, sql=sql)
+
+    logger.echo(response)
