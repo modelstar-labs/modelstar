@@ -36,3 +36,10 @@ class FileFormat:
     format_type: str
     delimiter: str
     skip_header: int
+
+
+type_map_parameter = {'int': 'NUMBER', 'str': 'STRING', 'float': 'FLOAT', 'bool': 'BOOL',
+                      'bytes': 'BINARY', 'list': 'ARRAY', 'dict': 'OBJECT', 'DataFrame': 'STRING'}
+
+type_map_return = {'int': 'NUMBER', 'str': 'STRING', 'float': 'FLOAT', 'bool': 'BOOL',
+                   'bytes': 'BINARY', 'list': 'ARRAY', 'dict': 'OBJECT', 'DataFrame': 'OBJECT'}

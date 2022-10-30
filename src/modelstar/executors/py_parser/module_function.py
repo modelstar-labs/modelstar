@@ -20,8 +20,8 @@ class FunctionReturn:
     '''Class for storing Function Returns.'''
     type: str
 
-    def sql_type(self):
-        return map_py_to_sql_type(self.type)
+    def sql_type(self, type_mapper: dict):
+        return map_py_to_sql_type(self.type, type_mapper)
 
     # SQL returns only one type.
     # https://docs.snowflake.com/en/developer-guide/udf/python/udf-python-designing.html#sql-python-data-type-mappings-for-parameters-and-return-types
@@ -37,10 +37,10 @@ class ModuleFunction:
     module_name: str
     line_no: int
 
-    def sql_param_list(self) -> str:
+    def sql_param_list(self, type_mapper: dict) -> str:
         sql_sep = ', '
         param_list = [param.name + ' ' +
-                      map_py_to_sql_type(param.type) for param in self.parameters]
+                      map_py_to_sql_type(param.type, type_mapper) for param in self.parameters]
         return sql_sep.join(param_list)
 
     def check_typing(self) -> None:
@@ -82,7 +82,8 @@ def parse_function(node, file_name, module_name):
         else:
             param_type = None
 
-        func_params.append(FunctionParameter(name=arg.arg, type=param_type, pos=param_pos))
+        func_params.append(FunctionParameter(
+            name=arg.arg, type=param_type, pos=param_pos))
 
         param_pos = param_pos + 1
 
@@ -99,12 +100,10 @@ def parse_function(node, file_name, module_name):
     return ModuleFunction(name=func_name, docstring=ast.get_docstring(node), parameters=func_params, returns=func_returns, file_name=file_name, module_name=module_name, line_no=func_lineno)
 
 
-def map_py_to_sql_type(py_type: str) -> str:
-    py_to_sql = {'int': 'NUMBER', 'str': 'STRING', 'float': 'FLOAT', 'bool': 'BOOL',
-                 'bytes': 'BINARY', 'list': 'ARRAY', 'dict': 'OBJECT', 'DataFrame': 'STRING'}
+def map_py_to_sql_type(py_type: str, type_mapper: dict) -> str:
 
-    if py_type in py_to_sql:
-        sql_type = py_to_sql[py_type]
+    if py_type in type_mapper:
+        sql_type = type_mapper[py_type]
     else:
         raise ValueError(f'Un-recognized python type `{py_type}`')
 

@@ -42,3 +42,8 @@ modelstar run 'SELECT * FROM CLIENTS'
 modelstar run 'SELECT CLIENT_ID, CLIENT_COUNTRY, find_capital(CLIENT_COUNTRY) as CLIENT_CITY FROM CLIENTS'
 ```
 
+## Register a stored-procedure
+
+```shell
+modelstar register procedure samples/machine_learning/training.py:ad_sales_model
+```

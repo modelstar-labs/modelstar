@@ -1,6 +1,6 @@
 from modelstar.executors.py_parser.module_function import ModuleFunction
 from modelstar.executors.table import TableInfo
-from modelstar.connectors.snowflake.context_types import SnowflakeConfig, FileFormat
+from modelstar.connectors.snowflake.context_types import SnowflakeConfig, FileFormat, type_map_parameter, type_map_return
 import os
 
 
@@ -31,8 +31,8 @@ def register_udf_from_file(config: SnowflakeConfig, file_path: str, function: Mo
 
     sql_statements.append(
         f'put file://{file_path} @{stage}/{function.name}/{version}')
-    sql_statements.append(f"""create or replace function {function.name}({function.sql_param_list()})
-returns {function.returns.sql_type()}
+    sql_statements.append(f"""create or replace function {function.name}({function.sql_param_list(type_mapper = type_map_parameter)})
+returns {function.returns.sql_type(type_mapper = type_map_return)}
 language python
 runtime_version = '3.8'
 packages = ({package_list_string})
@@ -69,8 +69,8 @@ def register_procedure_from_file(config: SnowflakeConfig, file_path: str, functi
 
     sql_statements.append(
         f'put file://{file_path} @{stage}/{function.name}/{version}')
-    sql_statements.append(f"""create or replace procedure {function.name}({function.sql_param_list()})
-    returns {function.returns.sql_type()}
+    sql_statements.append(f"""create or replace procedure {function.name}({function.sql_param_list(type_mapper = type_map_parameter)})
+    returns {function.returns.sql_type(type_mapper = type_map_return)}
     language python
     runtime_version = '3.8'
     packages = ({package_list_string})
@@ -79,7 +79,7 @@ def register_procedure_from_file(config: SnowflakeConfig, file_path: str, functi
 AS
 $$
 from {function.module_name} import {function.name}
-from modelstar import SNOWFLAKE_SESSION_STATE, modelstar_table_df, get_kwargs
+from modelstar import SNOWFLAKE_SESSION_STATE, get_kwargs, modelstar_table2df, modelstar_df2table
 from snowflake.snowpark.session import Session
 
 def procedure_handler(session: Session, {param_list_string}):
@@ -91,7 +91,7 @@ def procedure_handler(session: Session, {param_list_string}):
     for param_name, param_val in kwargs.items():
         if not isinstance(param_val, Session):
             if param_name in [{table_2_df_param_list_string}]:
-                arg_vals.append(modelstar_table_df(param_val))
+                arg_vals.append(modelstar_table2df(param_val))
             else:
                 arg_vals.append(param_val)
 
@@ -107,9 +107,10 @@ def put_file_from_local(config: SnowflakeConfig, file_path: str, stage_path: str
     sql_statements = []
     if stage_path is not None:
         sql_statements.append(
-            f'PUT file://{file_path} @{config.stage}/{stage_path}')
+            f'PUT file://{file_path} @{config.stage}/{stage_path} OVERWRITE = TRUE')
     else:
-        sql_statements.append(f'PUT file://{file_path} @{config.stage}')
+        sql_statements.append(
+            f'PUT file://{file_path} @{config.stage} OVERWRITE = TRUE')
 
     return sql_statements
 

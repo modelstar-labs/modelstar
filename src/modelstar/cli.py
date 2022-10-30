@@ -160,6 +160,7 @@ def build(ctx, option, source_name_pointer):
     config = load_config()
 
     if option == 'table':
+        # TODO: Migrate to https://docs.snowflake.com/en/user-guide/python-connector-api.html#write_pandas
         response = create_table(
             config, file_path=abs_file_path, table_name=table_name)
 

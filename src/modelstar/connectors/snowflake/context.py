@@ -1,4 +1,7 @@
+from snowflake.connector.pandas_tools import write_pandas
+import pandas
 import os
+from pandas import DataFrame
 from typing import List, Union
 import snowflake.connector
 from modelstar.utils.response import TableView
@@ -169,3 +172,17 @@ class SnowflakeContext:
             return TableView(table=table,  header=header, metadata=table_metadata)
         else:
             return None
+
+    def write_dataframe_as_table(self, df: DataFrame, table_name: str):
+
+        # Connecting to Snowflake using try and except blocks
+        cnx = snowflake.connector.connect(**self.config.to_connector())
+
+        # Write the data from the DataFrame to the table named "customers".
+        success, nchunks, nrows, output = write_pandas(
+            cnx, df, table_name, database=self.config.database, schema=self.config.schema, overwrite= True, auto_create_table=True)
+
+        print(output)
+        print(type(output))
+
+        return success

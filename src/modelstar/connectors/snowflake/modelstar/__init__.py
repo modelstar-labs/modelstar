@@ -96,7 +96,12 @@ def stage_to_dir(local_path: str) -> str:
     return final_path
 
 
-def modelstar_table_df(table_name: str):
+def modelstar_table2df(table_name: str):
+    table_df = SNOWFLAKE_SESSION_STATE.session.table(table_name).to_pandas()
+
+    return table_df
+
+def modelstar_df2table(table_name: str):
     table_df = SNOWFLAKE_SESSION_STATE.session.table(table_name).to_pandas()
 
     return table_df
