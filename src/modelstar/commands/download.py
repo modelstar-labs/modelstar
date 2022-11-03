@@ -1,8 +1,11 @@
 import os
+import webbrowser
 from modelstar.connectors.snowflake.context import SnowflakeContext
 from modelstar.connectors.snowflake.context_types import SnowflakeConfig
 from snowflake.connector.errors import OperationalError
 import joblib
+from modelstar.executors.report import write_report_artifacts
+
 
 def download_artifacts(config):
 
@@ -33,7 +36,7 @@ def download_artifacts(config):
     #         snowflake_context = SnowflakeContext(config)
     #         response = snowflake_context.run_sql(statements=sql)
     #         print(response.table.table)
-            
+
     #         return response
     #     except OperationalError:
     #         print('Oops')
@@ -49,3 +52,8 @@ def download_artifacts(config):
     for artifact in artifacts:
         # dict_keys(['name', 'html'])
         print(artifact.keys())
+
+    local_path = write_report_artifacts(artifacts=artifacts, run_id='mfOFzRhNW76ItFiT')
+
+    local_url = 'file://' + local_path
+    webbrowser.open(local_url, new=2)

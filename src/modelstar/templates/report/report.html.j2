@@ -1,0 +1,12 @@
+{% extends "base.html.j2" %}
+
+{% block main %} 
+    <div>
+        {% for artifact in artifacts %}
+            <div>
+                <h3>{{ artifact.name }}</h3>
+                <div>{{ artifact.html }}</div>
+            </div>
+        {% endfor %}
+    </div>
+{% endblock main %}
