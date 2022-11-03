@@ -6,6 +6,7 @@ from modelstar.commands.register import register_function_from_file, register_pr
 from modelstar.commands.upload import upload_file
 from modelstar.commands.create import create_table
 from modelstar.commands.run import run_sql
+from modelstar.commands.download import download_artifacts
 from modelstar.executors.config import set_session, load_config
 from modelstar.executors.project import check_project_folder_structure
 from modelstar.utils.path import strip_file_namespace_pointer, check_file_path
@@ -190,5 +191,22 @@ def build(ctx, sql):
     logger.echo('Running SQL')
 
     response = run_sql(config, sql=sql)
+
+    logger.echo(response)
+
+
+@main.command("check")
+@click.pass_context
+def build(ctx):
+    '''
+    modelstar check     
+    '''
+
+    check_project_folder_structure()
+    config = load_config()
+
+    logger.echo('Loaded session', detail=config.name)
+
+    response = download_artifacts(config=config)
 
     logger.echo(response)

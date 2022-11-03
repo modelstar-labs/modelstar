@@ -42,4 +42,4 @@ type_map_parameter = {'int': 'NUMBER', 'str': 'STRING', 'float': 'FLOAT', 'bool'
                       'bytes': 'BINARY', 'list': 'ARRAY', 'dict': 'OBJECT', 'DataFrame': 'STRING'}
 
 type_map_return = {'int': 'NUMBER', 'str': 'STRING', 'float': 'FLOAT', 'bool': 'BOOL',
-                   'bytes': 'BINARY', 'list': 'ARRAY', 'dict': 'OBJECT', 'DataFrame': 'OBJECT'}
+                   'bytes': 'BINARY', 'list': 'ARRAY', 'dict': 'OBJECT', 'DataFrame': 'VARIANT'}

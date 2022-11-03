@@ -4,6 +4,9 @@ import sys
 import joblib
 import pickle
 from dataclasses import dataclass
+from dataclasses import field
+import random
+import string
 
 try:
     from .constants import PATH_SYSTEM
@@ -21,6 +24,12 @@ except:
 @dataclass
 class SnowflakeSessionState():
     session = None
+    run_id: str = None
+    run_name: str = None
+    database: str = None
+    schema: str = None
+    stage: str = None
+    artifacts: list = field(default_factory=lambda: [])
 
 
 # https://docs.snowflake.com/en/developer-guide/udf/python/udf-python-creating.html#reading-and-writing-files-with-a-udf-handler
@@ -42,6 +51,7 @@ def modelstar_read_path(local_path: str = None, snowflake_path: str = None) -> s
 
 
 def modelstar_write_path(local_path: str, write_object):
+    # TODO: Migrate to https://book.pythontips.com/en/latest/context_managers.html
 
     file_name = os.path.basename(local_path)
     _, ext = os.path.splitext(file_name)
@@ -101,6 +111,7 @@ def modelstar_table2df(table_name: str):
 
     return table_df
 
+
 def modelstar_df2table(table_name: str):
     table_df = SNOWFLAKE_SESSION_STATE.session.table(table_name).to_pandas()
 
@@ -115,3 +126,18 @@ def get_kwargs():
         if key != 'self':
             kwargs[key] = values[key]
     return kwargs
+
+
+def gen_random_id(length: int = 16):
+    id = ''.join(random.choice(string.ascii_uppercase +
+                 string.ascii_lowercase + string.digits) for _ in range(length))
+
+    return id
+
+
+def modelstar_record(artifact: dict) -> None:
+    if isinstance(artifact, dict):
+        SNOWFLAKE_SESSION_STATE.artifacts.append(artifact)
+    else:
+        raise ValueError(
+            'Artifact passed into modelstar_record must be of type: dict')

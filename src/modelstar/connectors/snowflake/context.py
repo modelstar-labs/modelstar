@@ -135,6 +135,22 @@ class SnowflakeContext:
             file_stage_paths.append(file_stage_path)
 
         return SnowflakeResponse(table=response_table, info={'file_stage_paths': file_stage_paths})
+    
+    # def get_file(self, local_file_path: str, stage_path: str = None) -> SnowflakeResponse:
+    #     sql_statements_0 = SQL.session_use(self.config)
+    #     sql_statements_1 = SQL.put_file_from_local(
+    #         self.config, file_path, stage_path)
+
+    #     sql_statements = sql_statements_0 + sql_statements_1
+    #     response_table = self.execute_with_context(sql_statements, fetch=5)
+
+    #     file_name = os.path.basename(file_path)
+    #     if stage_path is not None:
+    #         file_stage_path = f'@{self.config.stage}/{stage_path}/{file_name}'
+    #     else:
+    #         file_stage_path = f'@{self.config.stage}/{file_name}'
+
+    #     return SnowflakeResponse(table=response_table, info={'file_stage_path': file_stage_path})
 
     def execute_with_context(self, statements, fetch: Union[int, str] = 5):
         # TODO run all the commands within a context manager

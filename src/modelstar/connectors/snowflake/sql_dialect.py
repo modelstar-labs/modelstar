@@ -51,7 +51,8 @@ def register_procedure_from_file(config: SnowflakeConfig, file_path: str, functi
     import_list.append(f"'@{stage}/{function.name}/{version}/{file_name}'")
     import_list_string = ', '.join(import_list)
 
-    package_list = [f"'{x}'" for x in package_imports]
+    package_imports.append('pandas')
+    package_list = [f"'{x}'" for x in set(package_imports)]
     package_list_string = ', '.join(package_list)
 
     sql_statements = []
@@ -79,8 +80,16 @@ def register_procedure_from_file(config: SnowflakeConfig, file_path: str, functi
 AS
 $$
 from {function.module_name} import {function.name}
-from modelstar import SNOWFLAKE_SESSION_STATE, get_kwargs, modelstar_table2df, modelstar_df2table
+from modelstar import SNOWFLAKE_SESSION_STATE, get_kwargs, modelstar_table2df, modelstar_df2table, gen_random_id, modelstar_write_path
 from snowflake.snowpark.session import Session
+import pandas as pd
+from uuid import uuid4
+
+SNOWFLAKE_SESSION_STATE.run_id = gen_random_id()
+SNOWFLAKE_SESSION_STATE.run_name = '{function.name}'
+SNOWFLAKE_SESSION_STATE.database = '{config.database}'
+SNOWFLAKE_SESSION_STATE.schema = '{config.schema}'
+SNOWFLAKE_SESSION_STATE.stage = '{config.stage}'
 
 def procedure_handler(session: Session, {param_list_string}):
     SNOWFLAKE_SESSION_STATE.session = session
@@ -94,8 +103,21 @@ def procedure_handler(session: Session, {param_list_string}):
                 arg_vals.append(modelstar_table2df(param_val))
             else:
                 arg_vals.append(param_val)
+    
+    result = {function.name}(*arg_vals)    
 
-    return {function.name}(*arg_vals)
+    if len(SNOWFLAKE_SESSION_STATE.artifacts) > 0:
+        artifacts_path = 'modelstar/' + SNOWFLAKE_SESSION_STATE.run_id + '.modelstar.joblib'
+        modelstar_write_path(local_path = artifacts_path, write_object = SNOWFLAKE_SESSION_STATE.artifacts)
+
+    if isinstance(result, pd.DataFrame):
+        result_table_name = 'result_{function.name}'
+        session.write_pandas(result, result_table_name, auto_create_table=True, overwrite=True)
+        return_result = {{ 'return_table': result_table_name, 'run_id' : SNOWFLAKE_SESSION_STATE.run_id }}
+    else:
+        return_result = result
+
+    return return_result
 $$;""")
 
     return sql_statements

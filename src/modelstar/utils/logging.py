@@ -29,6 +29,7 @@ class Logger:
             if isinstance(msg, str):
                 print(f'\n  {msg}')
             elif isinstance(msg, SnowflakeResponse):
+                print('')
                 print(msg.table.print())
         else:
             print(f'\n  {msg}:  {detail}')
