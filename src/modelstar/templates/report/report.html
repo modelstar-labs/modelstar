@@ -1,26 +1,40 @@
 {% extends "base.html" %} {% block main %}
-<div>
+<div class="notebook">
+    <h3 class="">Modelstar Report: {{run_id}}</h3>
     <div>
-        <span>Call name:</span>
-        <span>{{call_name}}</span>
+        <div class="font-heavy"></div>
+        <div class="font-heavy"></div>
+        <div class="font-heavy"></div>
+        <div class="font-heavy"></div>
+        <div class="font-heavy"></div>
     </div>
-    <div>
-        <span>Call version:</span>
-        <span>{{call_version}}</span>
-    </div>
-    <div>
-        <span>Run id:</span>
-        <span>{{run_id}}</span>
-    </div>
-    <div>
-        <span>Call location:</span>
-        <span>{{call_location}}</span>
-    </div>
-    <div>
-        <span>Run time stamp:</span>
-        <span>{{run_timestamp}}</span>
-    </div>
-    <div>
+
+    <table style="width: 100%">
+        <tbody>
+            <tr>
+                <td class="run_key">Call name</td>
+                <td class="run_value">{{call_name}}</td>
+            </tr>
+            <tr>
+                <td class="run_key">Call version</td>
+                <td class="run_value">{{call_version}}</td>
+            </tr>
+            <tr>
+                <td class="run_key">Run id</td>
+                <td class="run_value">{{run_id}}</td>
+            </tr>
+            <tr>
+                <td class="run_key">Call location</td>
+                <td class="run_value">{{call_location}}</td>
+            </tr>
+            <tr>
+                <td class="run_key">Run time stamp</td>
+                <td class="run_value">{{run_timestamp}}</td>
+            </tr>
+        </tbody>
+    </table>
+    <div style="margin-top: 4rem">
+        <h4>Artifacts Report</h4>
         {% for record in records %}
         <div>
             <div>{{ record.content }}</div>

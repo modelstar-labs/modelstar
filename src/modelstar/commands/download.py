@@ -6,7 +6,7 @@ from modelstar.executors.report import prepare_run_record_report
 from modelstar.utils.report import view_in_browser
 
 
-def download_records(config, run_id: str):
+def view_download_records(config, run_id: str):
 
     report_path = None
 
@@ -50,3 +50,8 @@ def download_records(config, run_id: str):
 
     else:
         view_in_browser(file_path=report_path)
+
+def build_new_report(run_id):
+
+    record_info = prepare_run_record_report(run_record_file_pointer='N6BVgs8YHko9Xp8H.modelstar.joblib.gz')
+    view_in_browser(file_path=record_info['report_file_path'])

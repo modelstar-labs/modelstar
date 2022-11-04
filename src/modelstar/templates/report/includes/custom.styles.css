@@ -1,0 +1,9 @@
+.run_key {
+    width: 150px;
+    font-weight: bold;
+}
+
+.run_value {
+    /* color: hsl(249 68% 44%); */
+    font-style: italic;
+}
