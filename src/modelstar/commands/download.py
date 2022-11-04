@@ -1,33 +1,52 @@
 import os
-
-
 from modelstar.connectors.snowflake.context import SnowflakeContext
 from modelstar.connectors.snowflake.context_types import SnowflakeConfig
-from modelstar import logger
-from modelstar.executors.report import write_artifacts_report
+from modelstar import logger, session_registry
+from modelstar.executors.report import prepare_run_record_report
+from modelstar.utils.report import view_in_browser
 
 
-def download_artifacts(config):
+def download_records(config, run_id: str):
 
-    # local_download_path = os.path.join(os.getcwd(), '.modelstar/artifacts/')
+    report_path = None
 
-    # if not os.path.exists(local_download_path):
-    #     os.mkdir(local_download_path)
+    if len(session_registry.runs) > 0:
+        for run in session_registry.runs:
+            if run['run_id'] == run_id:
+                report_path = run['report_file_path']
 
-    # if isinstance(config, SnowflakeConfig):
-    #     snowflake_context = SnowflakeContext(config)
-    #     response = snowflake_context.get_files(
-    #         local_path=local_download_path, name_pattern='.*\.modelstar.joblib.*')
-    # else:
-    #     raise ValueError(f'Failed to get artifacts.')
+    if report_path is None:
 
-    # logger.echo('ML run artifacts files', detail='Downloaded')
+        local_download_path = os.path.join(os.getcwd(), '.modelstar/records/')
 
-    # files_downloaded = response.info['files_downloaded']
+        if not os.path.exists(local_download_path):
+            os.mkdir(local_download_path)
 
-    artifacts_downloaded = ['mfOFzRhNW76ItFiT.modelstar.joblib.gz']
+        if isinstance(config, SnowflakeConfig):
+            snowflake_context = SnowflakeContext(config)
+            response = snowflake_context.get_files(
+                local_path=local_download_path, name_pattern='.*\.modelstar.joblib.*')
+        else:
+            raise ValueError(f'Failed to get run records.')
 
-    for file in artifacts_downloaded:
-        report_file_path = write_artifacts_report(artifacts_file_pointer=file)
+        logger.echo('Snowflake run records', detail='Downloaded')
 
-        
+        records_downloaded = response.info['files_downloaded']
+
+        for file in records_downloaded:
+            record_info = prepare_run_record_report(
+                run_record_file_pointer=file)
+            session_registry.add_record(record_info)
+
+        if len(session_registry.runs) > 0:
+            for run in session_registry.runs:
+                if run['run_id'] == run_id:
+                    report_path = run['report_file_path']
+
+        if report_path is not None:
+            view_in_browser(file_path=report_path)
+        else:
+            raise ValueError(f'Run report for {run_id} not found.')
+
+    else:
+        view_in_browser(file_path=report_path)

@@ -7,17 +7,20 @@ report_templates_folder = os.path.join(TEMPLATES_PATH, 'report')
 
 report_environment = Environment(
     loader=FileSystemLoader(report_templates_folder))
-report_template = report_environment.get_template("report.html.j2")
+report_template = report_environment.get_template("report.html")
 
 
-def write_artifacts_report(artifacts_file_pointer: str):
+def prepare_run_record_report(run_record_file_pointer: str):
 
-    artifacts_file_path = os.path.join(
-        os.getcwd(), f'.modelstar/artifacts/{artifacts_file_pointer}')
+    run_record_file_path = os.path.join(
+        os.getcwd(), f'.modelstar/records/{run_record_file_pointer}')
 
-    artifacts = joblib.load(filename=artifacts_file_path)
+    run_record = joblib.load(filename=run_record_file_path)
 
-    report_file_name = f"report_{artifacts.run_id}.html"
+    # print(run_record.keys())
+    # ['call_name', 'call_version', 'run_id', 'call_location', 'stage', 'run_timestamp', 'records']
+
+    report_file_name = f"report_{run_record['run_id']}.html"
 
     reports_folder = os.path.join(os.getcwd(), '.modelstar/reports')
 
@@ -26,10 +29,10 @@ def write_artifacts_report(artifacts_file_pointer: str):
 
     report_file_path = os.path.join(reports_folder, report_file_name)
 
-    report_content_context = {"artifacts": artifacts}
+    report_content_context = run_record
     report_content = report_template.render(report_content_context)
 
     with open(report_file_path, mode="w", encoding="utf-8") as report_file:
         report_file.write(report_content)
 
-    return {'report_file_path': report_file_path, 'artifacts_file_path': artifacts_file_path, 'call_name': 'call_name', 'run_id': 'run_id'}
+    return {'report_file_path': report_file_path, 'run_record_file_path': run_record_file_path, 'call_name': run_record['call_name'], 'call_version': run_record['call_version'], 'run_id': run_record['run_id'], 'run_timestamp': run_record['run_timestamp']}

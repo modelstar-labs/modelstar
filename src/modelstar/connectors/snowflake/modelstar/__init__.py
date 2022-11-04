@@ -7,6 +7,7 @@ from dataclasses import dataclass
 from dataclasses import field
 import random
 import string
+from datetime import datetime
 
 try:
     from .constants import PATH_SYSTEM
@@ -25,11 +26,26 @@ except:
 class SnowflakeSessionState():
     session = None
     run_id: str = None
-    run_name: str = None
+    call_name: str = field(default_factory=lambda: REGISTRY_NAME)
+    call_version: str = field(default_factory=lambda: REGISTRY_VERSION)
     database: str = None
     schema: str = None
     stage: str = None
-    artifacts: list = field(default_factory=lambda: [])
+    timestamp: datetime = field(default_factory=datetime.utcnow)
+    records: list = field(default_factory=lambda: [])
+
+    def write_records(self):
+        write_path = 'run_record/' + self.run_id + '.modelstar.joblib'
+        record_object = {
+            'call_name': self.call_name,
+            'call_version': self.call_version,
+            'run_id': self.run_id,
+            'call_location': f'{self.database.capitalize()}/{self.schema.capitalize()}',
+            'stage': self.stage,
+            'run_timestamp': self.timestamp.strftime("%m/%d/%Y, %H:%M:%S"),
+            'records': self.records
+        }
+        modelstar_write_path(local_path=write_path, write_object=record_object)
 
 
 # https://docs.snowflake.com/en/developer-guide/udf/python/udf-python-creating.html#reading-and-writing-files-with-a-udf-handler
@@ -135,9 +151,7 @@ def gen_random_id(length: int = 16):
     return id
 
 
-def modelstar_record(artifact: dict) -> None:
-    if isinstance(artifact, dict):
-        SNOWFLAKE_SESSION_STATE.artifacts.append(artifact)
-    else:
-        raise ValueError(
-            'Artifact passed into modelstar_record must be of type: dict')
+def modelstar_record(record_type: str, content: str) -> None:
+
+    SNOWFLAKE_SESSION_STATE.records.append(
+        {'type': record_type, 'content': content})

@@ -86,7 +86,6 @@ import pandas as pd
 from uuid import uuid4
 
 SNOWFLAKE_SESSION_STATE.run_id = gen_random_id()
-SNOWFLAKE_SESSION_STATE.run_name = '{function.name}'
 SNOWFLAKE_SESSION_STATE.database = '{config.database}'
 SNOWFLAKE_SESSION_STATE.schema = '{config.schema}'
 SNOWFLAKE_SESSION_STATE.stage = '{config.stage}'
@@ -106,9 +105,7 @@ def procedure_handler(session: Session, {param_list_string}):
     
     result = {function.name}(*arg_vals)    
 
-    if len(SNOWFLAKE_SESSION_STATE.artifacts) > 0:
-        artifacts_path = 'modelstar/' + SNOWFLAKE_SESSION_STATE.run_id + '.modelstar.joblib'
-        modelstar_write_path(local_path = artifacts_path, write_object = SNOWFLAKE_SESSION_STATE.artifacts)
+    SNOWFLAKE_SESSION_STATE.write_records()
 
     if isinstance(result, pd.DataFrame):
         result_table_name = 'result_{function.name}'

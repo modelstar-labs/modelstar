@@ -1,0 +1,31 @@
+{% extends "base.html" %} {% block main %}
+<div>
+    <div>
+        <span>Call name:</span>
+        <span>{{call_name}}</span>
+    </div>
+    <div>
+        <span>Call version:</span>
+        <span>{{call_version}}</span>
+    </div>
+    <div>
+        <span>Run id:</span>
+        <span>{{run_id}}</span>
+    </div>
+    <div>
+        <span>Call location:</span>
+        <span>{{call_location}}</span>
+    </div>
+    <div>
+        <span>Run time stamp:</span>
+        <span>{{run_timestamp}}</span>
+    </div>
+    <div>
+        {% for record in records %}
+        <div>
+            <div>{{ record.content }}</div>
+        </div>
+        {% endfor %}
+    </div>
+</div>
+{% endblock main %}

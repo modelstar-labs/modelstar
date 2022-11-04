@@ -6,6 +6,7 @@ from yaml.loader import SafeLoader
 from jsonschema import validate
 from modelstar.connectors.snowflake.context import SnowflakeResponse
 from modelstar.version import __version__
+from dataclasses import dataclass
 
 
 class Logger:
@@ -40,32 +41,18 @@ class Logger:
             print(f'\n  {msg}:  {detail}')
 
 
+@dataclass
+class RunRecord:
+    run_id: str
+
+
 class SessionRegistry:
     def __init__(self, log_status: bool = True):
         self.log_status = log_status
         self.file_path = None
-        self.doc = []
-        """
-        {
-            'modelstar': {
-                'version': '0.1.0'
-            },
-            'registrations': [
-                {
-                    'name': 'something',
-                    'type': 'procedure/function',
-                    'version': 'v1'
-                    'runs': [...run_ids],
-                    'artifacts': [
-                        'run_id': 'asdasd',
-                        'artifact_path': '/asdasldkj/asdasd.modelstar.joblib',
-                        'report_path': '/asdasldkj/asdasd.report',
-                    ]
-                }
-            ]
-        }
-        
-        """
+        self.registrations = []
+        self.runs = []
+
         self.load_registry()
 
     def load_registry(self):
@@ -77,13 +64,14 @@ class SessionRegistry:
                 doc.write('# MODELSTAR INTERNAL FILE: SESSION REGISTRY\n')
                 doc.write('---\n')
                 dump_init = {'modelstar': {
-                    'version': __version__}, 'registrations': []}
+                    'version': __version__}, 'registrations': [], 'runs': []}
                 yaml.dump(dump_init, doc, sort_keys=False,
                           default_flow_style=False)
 
         with open(self.file_path) as doc:
             load_doc = yaml.load(doc, Loader=SafeLoader)
-            self.doc = load_doc['registrations']
+            self.registrations = load_doc['registrations']
+            self.runs = load_doc['runs']
 
     def dump_registry(self):
         self.file_path = os.path.join(
@@ -93,28 +81,34 @@ class SessionRegistry:
             doc.write('# MODELSTAR INTERNAL FILE: SESSION REGISTRY\n')
             doc.write('---\n')
             dump_doc = {'modelstar': {'version': __version__},
-                        'registrations': self.doc}
+                        'registrations': self.registrations, 'runs': self.runs}
             yaml.dump(dump_doc, doc, sort_keys=False, default_flow_style=False)
 
-    def add_artifact(self, artifact: dict):
-        self.doc.append(artifact)
+    def add_record(self, run_record: dict):
+        call_name = run_record['call_name']
+        call_version = run_record['call_version']
+        run_id = run_record['run_id']
+        registrations = self.registrations
+
+        find_regis = (i for i, e in enumerate(
+            registrations) if (e['name'] == call_name and e['version'] == call_version))
+
+        idx_regis = next(find_regis)
+        registrations[idx_regis]['runs'].append(run_id)
+        registrations[idx_regis]['records'].append({'run_id': run_record['run_id'], 'report_file_path': run_record['report_file_path'],
+                                                   'run_record_file_path': run_record['run_record_file_path'], 'run_timestamp': run_record['run_timestamp']})
+        self.registrations = registrations
+        self.runs.append({'run_id': run_record['run_id'], 'report_file_path': run_record['report_file_path'],
+                         'run_record_file_path': run_record['run_record_file_path']})
 
     def add_register(self, name: str, type: str, version: str):
-        '''
-        {
-                    'name': 'something',
-                    'type': 'procedure/function',
-                    'version': 'v1'
-                    'runs': [...run_ids],
-                    'artifacts': [
-                        'run_id': 'asdasd',
-                        'artifact_path': '/asdasldkj/asdasd.modelstar.joblib',
-                        'report_path': '/asdasldkj/asdasd.report',
-                    ]
-                }
-        '''
 
-        registration = {'name': name, 'type': type,
-                        'version': version, 'runs': [], 'artifacts': []}
+        try:
+            find_regis = (i for i, e in enumerate(self.registrations) if (
+                e['name'] == name and e['version'] == version))
+            next(find_regis)
+        except:
+            registration = {'name': name, 'type': type,
+                            'version': version, 'runs': [], 'records': []}
 
-        self.doc.append(registration)
+            self.registrations.append(registration)
