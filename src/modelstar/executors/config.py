@@ -2,6 +2,7 @@ import yaml
 from yaml.loader import SafeLoader
 from modelstar.connectors.snowflake.context_types import SnowflakeConfig
 from jsonschema import validate
+from modelstar.version import __version__
 
 config_schema = {
     "type": "object",
@@ -57,16 +58,18 @@ def set_session(config_name: str) -> None:
 
             validate(instance=session_config, schema=config_schema)
 
-            with open('./.modelstar/session.yaml', 'w') as session_file:
+            with open('./.modelstar/session.config.yaml', 'w') as session_file:
                 session_file.write('# MODELSTAR INTERNAL FILE: SESSION\n')
                 session_file.write('---\n')
-                yaml.dump({'session': config}, session_file,
+                dump_content = {'modelstar': {
+                    'version': __version__}, 'session': config}
+                yaml.dump(dump_content, session_file,
                           sort_keys=False, default_flow_style=False)
 
 
 def load_config() -> SnowflakeConfig:
 
-    with open('./.modelstar/session.yaml') as session_file:
+    with open('./.modelstar/session.config.yaml') as session_file:
         session_doc = yaml.load(session_file, Loader=SafeLoader)
 
     assert 'session' in session_doc, 'No session has been initialized. You must initialize a session using  `modelstar use <session_name>`.'

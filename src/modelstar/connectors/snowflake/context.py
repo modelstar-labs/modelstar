@@ -1,14 +1,14 @@
-from snowflake.connector.pandas_tools import write_pandas
-import pandas
 import os
 from pandas import DataFrame
 from typing import List, Union
-import snowflake.connector
-from modelstar.utils.response import TableView
-from modelstar.executors.py_parser.module_function import ModuleFunction
-import modelstar.connectors.snowflake.sql_dialect as SQL
+import modelstar.connectors.snowflake.sql_dialect as SnowSQL
 from modelstar.executors.table import TableInfo
 from modelstar.connectors.snowflake.context_types import SnowflakeConfig, SnowflakeResponse, FileFormat
+import snowflake.connector
+from snowflake.connector.pandas_tools import write_pandas
+from snowflake.connector.errors import OperationalError
+from modelstar.utils.response import TableView
+from modelstar.executors.py_parser.module_function import ModuleFunction
 
 
 class SnowflakeContext:
@@ -16,7 +16,7 @@ class SnowflakeContext:
         self.config = config
 
     def run_sql(self, statements: Union[str, list]):
-        sql_statements_0 = SQL.session_use(self.config)
+        sql_statements_0 = SnowSQL.session_use(self.config)
 
         if isinstance(statements, str):
             sql_statements_1 = [statements]
@@ -38,9 +38,20 @@ class SnowflakeContext:
 
         return SnowflakeResponse(table=response_table)
 
+    def write_dataframe_as_table(self, df: DataFrame, table_name: str):
+
+        # Connecting to Snowflake using try and except blocks
+        cnx = snowflake.connector.connect(**self.config.to_connector())
+
+        # Write the data from the DataFrame to the table named "customers".
+        success, nchunks, nrows, output = write_pandas(
+            cnx, df, table_name, database=self.config.database, schema=self.config.schema, overwrite=True, auto_create_table=True)
+
+        return success
+
     def register_udf(self, file_path: str, function: ModuleFunction, imports: list, package_imports: list, version: str = None) -> SnowflakeResponse:
-        sql_statements_0 = SQL.session_use(self.config)
-        sql_statements_1 = SQL.register_udf_from_file(
+        sql_statements_0 = SnowSQL.session_use(self.config)
+        sql_statements_1 = SnowSQL.register_udf_from_file(
             self.config, file_path, function, imports, package_imports, version)
         sql_statements = sql_statements_0 + sql_statements_1
         response_table = self.execute_with_context(sql_statements, fetch=5)
@@ -48,8 +59,8 @@ class SnowflakeContext:
         return SnowflakeResponse(table=response_table)
 
     def register_procedure(self, file_path: str, function: ModuleFunction, imports: list, package_imports: list, version: str = None) -> SnowflakeResponse:
-        sql_statements_0 = SQL.session_use(self.config)
-        sql_statements_1 = SQL.register_procedure_from_file(
+        sql_statements_0 = SnowSQL.session_use(self.config)
+        sql_statements_1 = SnowSQL.register_procedure_from_file(
             self.config, file_path, function, imports, package_imports, version)
         sql_statements = sql_statements_0 + sql_statements_1
         response_table = self.execute_with_context(sql_statements, fetch=5)
@@ -57,15 +68,15 @@ class SnowflakeContext:
         return SnowflakeResponse(table=response_table)
 
     def clear_existing_function_version(self, function: ModuleFunction, version: str) -> None:
-        sql_statements_0 = SQL.session_use(self.config)
-        sql_statements_1 = SQL.clear_function_stage_files(
+        sql_statements_0 = SnowSQL.session_use(self.config)
+        sql_statements_1 = SnowSQL.clear_function_stage_files(
             self.config, function_name=function.name, version=version)
         sql_statements = sql_statements_0 + sql_statements_1
         self.execute_with_context(sql_statements, fetch=None)
 
     def put_file(self, file_path: str, stage_path: str = None) -> SnowflakeResponse:
-        sql_statements_0 = SQL.session_use(self.config)
-        sql_statements_1 = SQL.put_file_from_local(
+        sql_statements_0 = SnowSQL.session_use(self.config)
+        sql_statements_1 = SnowSQL.put_file_from_local(
             self.config, file_path, stage_path)
 
         sql_statements = sql_statements_0 + sql_statements_1
@@ -87,20 +98,21 @@ class SnowflakeContext:
         3. Creates the file format for copying the data from file to table using: CREATE FILE_FORMAT
         4. Copys the data from stage file into table using: COPY INTO
         '''
-        sql_statements_0 = SQL.session_use(self.config)
+        sql_statements_0 = SnowSQL.session_use(self.config)
 
-        sql_statements_1 = SQL.put_file_from_local(
+        sql_statements_1 = SnowSQL.put_file_from_local(
             self.config, file_path=file_path, stage_path=None)
 
         file_name = os.path.basename(file_path)
         file_stage_path = f'@{self.config.stage}/{file_name}'
 
-        sql_statements_2 = SQL.create_table(self.config, table_info=table_info)
+        sql_statements_2 = SnowSQL.create_table(
+            self.config, table_info=table_info)
 
-        sql_statements_3 = SQL.create_file_format(
+        sql_statements_3 = SnowSQL.create_file_format(
             self.config, file_format=file_format)
 
-        sql_statements_4 = SQL.copy_file_into_table(
+        sql_statements_4 = SnowSQL.copy_file_into_table(
             self.config, table_info=table_info, file_stage_path=file_stage_path, file_format=file_format)
 
         sql_statements = sql_statements_0 + sql_statements_1 + \
@@ -113,12 +125,12 @@ class SnowflakeContext:
         return SnowflakeResponse(table=response_table)
 
     def put_multi_file(self, file_paths: List[str], stage_path: str = None) -> SnowflakeResponse:
-        sql_statements_0 = SQL.session_use(self.config)
+        sql_statements_0 = SnowSQL.session_use(self.config)
         sql_statements_1 = []
 
         for file_path in file_paths:
             sql_statements_1 = sql_statements_1 + \
-                SQL.put_file_from_local(self.config, file_path, stage_path)
+                SnowSQL.put_file_from_local(self.config, file_path, stage_path)
 
         sql_statements = sql_statements_0 + sql_statements_1
         response_table = self.execute_with_context(sql_statements, fetch=5)
@@ -135,22 +147,33 @@ class SnowflakeContext:
             file_stage_paths.append(file_stage_path)
 
         return SnowflakeResponse(table=response_table, info={'file_stage_paths': file_stage_paths})
-    
-    # def get_file(self, local_file_path: str, stage_path: str = None) -> SnowflakeResponse:
-    #     sql_statements_0 = SQL.session_use(self.config)
-    #     sql_statements_1 = SQL.put_file_from_local(
-    #         self.config, file_path, stage_path)
 
-    #     sql_statements = sql_statements_0 + sql_statements_1
-    #     response_table = self.execute_with_context(sql_statements, fetch=5)
+    def get_files(self, local_path: str, stage_path: str = None, name_pattern: str = None) -> SnowflakeResponse:
+        sql_statements_0 = SnowSQL.session_use(self.config)
+        sql_statements_1 = SnowSQL.get_file_from_stage(
+            self.config, local_path=local_path, stage_path=stage_path, name_pattern=name_pattern)
 
-    #     file_name = os.path.basename(file_path)
-    #     if stage_path is not None:
-    #         file_stage_path = f'@{self.config.stage}/{stage_path}/{file_name}'
-    #     else:
-    #         file_stage_path = f'@{self.config.stage}/{file_name}'
+        sql_statements = sql_statements_0 + sql_statements_1
+        # sql = f"GET @{config.stage} file://{local_folder_path} PATTERN='.*\.modelstar.joblib.*'"
 
-    #     return SnowflakeResponse(table=response_table, info={'file_stage_path': file_stage_path})
+        try:
+            response_table = self.execute_with_context(
+                sql_statements, fetch='all')
+
+            files_downloaded = []
+            for file in response_table.table:
+                file_pointer = file[0]
+                files_downloaded.append(os.path.basename(file_pointer))
+
+            return SnowflakeResponse(table=response_table, info={'files_downloaded': files_downloaded})
+
+        except OperationalError:
+            response_table = TableView(
+                table=[('No files to get from stage.')],  header='Status')
+            return SnowflakeResponse(table=response_table, info={'files_downloaded': []})
+
+        except:
+            raise ValueError(f'Failed to execute check.')
 
     def execute_with_context(self, statements, fetch: Union[int, str] = 5):
         # TODO run all the commands within a context manager
@@ -188,17 +211,3 @@ class SnowflakeContext:
             return TableView(table=table,  header=header, metadata=table_metadata)
         else:
             return None
-
-    def write_dataframe_as_table(self, df: DataFrame, table_name: str):
-
-        # Connecting to Snowflake using try and except blocks
-        cnx = snowflake.connector.connect(**self.config.to_connector())
-
-        # Write the data from the DataFrame to the table named "customers".
-        success, nchunks, nrows, output = write_pandas(
-            cnx, df, table_name, database=self.config.database, schema=self.config.schema, overwrite= True, auto_create_table=True)
-
-        print(output)
-        print(type(output))
-
-        return success

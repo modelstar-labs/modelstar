@@ -1,5 +1,5 @@
 import click
-from modelstar import logger
+from modelstar import logger, session_registry
 from modelstar.commands.project import initialize_project
 from modelstar.commands.database import list_databases
 from modelstar.commands.register import register_function_from_file, register_procedure_from_file
@@ -140,6 +140,10 @@ def build(ctx, register_type, file_function_pointer):
         # TODO Make custom error for these.
         raise ValueError(
             f'`{register_type}` not a valid modelstar register command option.')
+
+    session_registry.add_register(
+        name=function_name, type=register_type, version=version)
+    session_registry.dump_registry()
 
 
 @main.command("create")

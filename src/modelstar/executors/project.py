@@ -39,8 +39,8 @@ def check_project_folder_structure():
     else:
         os.mkdir(dotmos_tmp_path)
 
-    if 'session.yaml' not in dotmos_list_set:
-        session_path = os.path.join(dotms_path, 'session.yaml')
+    if 'session.config.yaml' not in dotmos_list_set:
+        session_path = os.path.join(dotms_path, 'session.config.yaml')
         with open(session_path, 'w') as file:
             file.write("""# MODELSTAR INTERNAL FILES: SESSION
 ---""")

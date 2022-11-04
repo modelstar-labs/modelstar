@@ -1,4 +1,4 @@
-from modelstar import __version__
+from modelstar.version import __version__
 
 
 def test_version():

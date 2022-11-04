@@ -137,6 +137,25 @@ def put_file_from_local(config: SnowflakeConfig, file_path: str, stage_path: str
     return sql_statements
 
 
+def get_file_from_stage(config: SnowflakeConfig, local_path: str, stage_path: str = None, name_pattern: str = None):
+
+    # TODO add threads to this to make this faster.
+    sql_statements = []
+
+    if stage_path is not None:
+        stmt = f'GET @{config.stage}/{stage_path} file://{local_path}'
+    else:
+        stmt = f'GET @{config.stage} file://{local_path}'
+
+    if name_pattern is not None:
+        # .*\.modelstar.joblib.* 
+        stmt = stmt + f" PATTERN='{name_pattern}'"
+    
+    sql_statements.append(stmt)
+
+    return sql_statements
+
+
 def clear_function_stage_files(config: SnowflakeConfig, function_name: str, version: str):
 
     sql_statements = []

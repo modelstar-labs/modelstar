@@ -1,59 +1,33 @@
 import os
-import webbrowser
+
+
 from modelstar.connectors.snowflake.context import SnowflakeContext
 from modelstar.connectors.snowflake.context_types import SnowflakeConfig
-from snowflake.connector.errors import OperationalError
-import joblib
-from modelstar.executors.report import write_report_artifacts
+from modelstar import logger
+from modelstar.executors.report import write_artifacts_report
 
 
 def download_artifacts(config):
 
-    local_folder_path = os.path.join(os.getcwd(), '.modelstar/artifacts/')
+    # local_download_path = os.path.join(os.getcwd(), '.modelstar/artifacts/')
 
-    if not os.path.exists(local_folder_path):
-        os.mkdir(local_folder_path)
-
-    '''
-    GET internalStage file://<path_to_file>/<filename>
-        [ PARALLEL = <integer> ]
-        [ PATTERN = '<regex_pattern>'' ]
-    
-    To replicate:
-
-    Download all files in the stage for the mytable table to the /tmp/data local directory: 
-        get @%mytable file:///tmp/data/;    
-    
-    Download files from the myfiles path in the stage for the current user to the /tmp/data local directory: 
-        get @~/myfiles file:///tmp/data/;
-    
-    '''
-
-    # sql = f"GET @{config.stage} file://{local_folder_path} PATTERN='.*\.modelstar.joblib.*'"
+    # if not os.path.exists(local_download_path):
+    #     os.mkdir(local_download_path)
 
     # if isinstance(config, SnowflakeConfig):
-    #     try:
-    #         snowflake_context = SnowflakeContext(config)
-    #         response = snowflake_context.run_sql(statements=sql)
-    #         print(response.table.table)
-
-    #         return response
-    #     except OperationalError:
-    #         print('Oops')
-    #     except:
-    #         raise ValueError(f'Failed to execute check.')
+    #     snowflake_context = SnowflakeContext(config)
+    #     response = snowflake_context.get_files(
+    #         local_path=local_download_path, name_pattern='.*\.modelstar.joblib.*')
     # else:
-    #     raise ValueError(f'Failed to execute.')
+    #     raise ValueError(f'Failed to get artifacts.')
 
-    file = 'mfOFzRhNW76ItFiT.modelstar.joblib.gz'
-    file_path = os.path.join(os.getcwd(), f'.modelstar/artifacts/{file}')
-    artifacts = joblib.load(filename=file_path)
+    # logger.echo('ML run artifacts files', detail='Downloaded')
 
-    for artifact in artifacts:
-        # dict_keys(['name', 'html'])
-        print(artifact.keys())
+    # files_downloaded = response.info['files_downloaded']
 
-    local_path = write_report_artifacts(artifacts=artifacts, run_id='mfOFzRhNW76ItFiT')
+    artifacts_downloaded = ['mfOFzRhNW76ItFiT.modelstar.joblib.gz']
 
-    local_url = 'file://' + local_path
-    webbrowser.open(local_url, new=2)
+    for file in artifacts_downloaded:
+        report_file_path = write_artifacts_report(artifacts_file_pointer=file)
+
+        
