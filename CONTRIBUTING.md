@@ -11,3 +11,10 @@ To install the local developing project into the environment in editable mode us
 ```shell
 poetry publish --build --username __token__ --password $PYPI_MODELSTAR_KEY --build --skip-existing
 ```
+
+## Using with `pyenv` + `poetry`
+
+- Find out which and where is the Python version that is needed (Py-3.8), using: `pyenv which python`
+- Use that path to activate the env of Poetry: `poetry env use <path>`
+- Install the dependencies for the project: `poetry install`
+- Spawn the virtual environment: `poetry shell`
