@@ -1,8 +1,9 @@
+import os
+import zipfile
 from typing import List
 from modelstar.executors.py_parser.module_import import ModuleImport
 from modelstar.connectors.snowflake.modelstar import SNOWFLAKE_FILE_HANDLER_PATH
-import os
-import zipfile
+from modelstar.utils.path import if_exists_else_create_file_folder
 
 
 def zip_local_imports(zip_list: List[ModuleImport]):
@@ -26,8 +27,7 @@ def zip_local_imports(zip_list: List[ModuleImport]):
     zip_path = os.path.join(os.getcwd(), '.modelstar/.tmp')
 
     # If zip_path folder doesn't exist, then create it.
-    if not os.path.isdir(zip_path):
-        os.makedirs(zip_path)
+    if_exists_else_create_file_folder(ff_path=zip_path, ff_type='folder')
 
     zip_name = 'local_modules.zip'
     zip_file_path = os.path.join(zip_path, zip_name)

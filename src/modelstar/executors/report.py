@@ -2,6 +2,7 @@ import os
 import joblib
 from jinja2 import Environment, FileSystemLoader
 from modelstar.templates import TEMPLATES_PATH
+from modelstar.utils.path import if_exists_else_create_file_folder
 
 report_templates_folder = os.path.join(TEMPLATES_PATH, 'report')
 
@@ -17,15 +18,11 @@ def prepare_run_record_report(run_record_file_pointer: str):
 
     run_record = joblib.load(filename=run_record_file_path)
 
-    # print(run_record.keys())
-    # ['call_name', 'call_version', 'run_id', 'call_location', 'stage', 'run_timestamp', 'records']
-
     report_file_name = f"report_{run_record['run_id']}.html"
 
     reports_folder = os.path.join(os.getcwd(), '.modelstar/reports')
 
-    if not os.path.exists(reports_folder):
-        os.mkdir(reports_folder)
+    if_exists_else_create_file_folder(ff_path=reports_folder, ff_type='folder')
 
     report_file_path = os.path.join(reports_folder, report_file_name)
 

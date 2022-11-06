@@ -4,6 +4,7 @@ from modelstar.connectors.snowflake.context_types import SnowflakeConfig
 from modelstar import logger, session_registry
 from modelstar.executors.report import prepare_run_record_report
 from modelstar.utils.report import view_in_browser
+from modelstar.utils.path import if_exists_else_create_file_folder
 
 
 def view_download_records(config, run_id: str):
@@ -19,8 +20,8 @@ def view_download_records(config, run_id: str):
 
         local_download_path = os.path.join(os.getcwd(), '.modelstar/records/')
 
-        if not os.path.exists(local_download_path):
-            os.mkdir(local_download_path)
+        if_exists_else_create_file_folder(
+            ff_path=local_download_path, ff_type='folder')
 
         if isinstance(config, SnowflakeConfig):
             snowflake_context = SnowflakeContext(config)
@@ -51,7 +52,9 @@ def view_download_records(config, run_id: str):
     else:
         view_in_browser(file_path=report_path)
 
+
 def build_new_report(run_id):
 
-    record_info = prepare_run_record_report(run_record_file_pointer='N6BVgs8YHko9Xp8H.modelstar.joblib.gz')
+    record_info = prepare_run_record_report(
+        run_record_file_pointer='N6BVgs8YHko9Xp8H.modelstar.joblib.gz')
     view_in_browser(file_path=record_info['report_file_path'])

@@ -47,3 +47,20 @@ def check_file_path(file_path: str) -> str:
         raise ValueError(f'`{file_path}` is not a valid file.')
 
     return abs_file_path
+
+
+def if_exists_else_create_file_folder(ff_path: str, ff_type: str):
+    if not os.path.exists(ff_path):
+        if ff_type == 'file':
+            with open(ff_path, 'w') as file:
+                pass
+        if ff_type == 'folder':
+            os.mkdir(ff_path)
+
+    else:
+        if ff_type == 'file':
+            if not os.path.isfile(ff_path):
+                raise ValueError(f'Existing File/Folder Conflict: {ff_path}')
+        if ff_type == 'folder':
+            if not os.path.isdir(ff_path):
+                raise ValueError(f'Existing File/Folder Conflict: {ff_path}')

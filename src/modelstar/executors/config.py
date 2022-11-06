@@ -1,8 +1,10 @@
 import yaml
+import os
 from yaml.loader import SafeLoader
 from modelstar.connectors.snowflake.context_types import SnowflakeConfig
 from jsonschema import validate
 from modelstar.version import __version__
+from modelstar.utils.path import if_exists_else_create_file_folder
 
 config_schema = {
     "type": "object",
@@ -58,7 +60,13 @@ def set_session(config_name: str) -> None:
 
             validate(instance=session_config, schema=config_schema)
 
-            with open('./.modelstar/session.config.yaml', 'w') as session_file:
+            session_config_yaml = os.path.join(
+                os.getcwd(), '.modelstar/session.config.yaml')
+
+            if_exists_else_create_file_folder(
+                ff_path=session_config_yaml, ff_type='file')
+
+            with open(session_config_yaml, 'w') as session_file:
                 session_file.write('# MODELSTAR INTERNAL FILE: SESSION\n')
                 session_file.write('---\n')
                 dump_content = {'modelstar': {
@@ -69,7 +77,14 @@ def set_session(config_name: str) -> None:
 
 def load_config() -> SnowflakeConfig:
 
-    with open('./.modelstar/session.config.yaml') as session_file:
+    session_config_yaml = os.path.join(
+        os.getcwd(), '.modelstar/session.config.yaml')
+
+    if not os.path.exists(session_config_yaml):
+        raise ValueError(
+            'No session has been initialized. You must initialize a session using  `modelstar use <session_name>`.')
+
+    with open('.modelstar/session.config.yaml') as session_file:
         session_doc = yaml.load(session_file, Loader=SafeLoader)
 
     assert 'session' in session_doc, 'No session has been initialized. You must initialize a session using  `modelstar use <session_name>`.'
