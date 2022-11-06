@@ -1,14 +1,15 @@
+from modelstar import modelstar_write_path, modelstar_record
 from prophet.plot import plot_plotly, plot_components_plotly
 import pandas as pd
 from pandas import DataFrame
 from prophet import Prophet
-import pickle
 import plotly
 
-# placeholder for more data validation for df[['ds', 'y']]
+__version__ = 'V1'
 
 
 def validate_forecast_data(df):
+    # placeholder for more data validation for df[['ds', 'y']]
     pass
 
 
@@ -36,23 +37,12 @@ def prepare_data(df: DataFrame, ds_col_name: str, y_col_name: str) -> DataFrame:
 
 
 # main function to be deployed as sproc
-def univariate_time_series_forecast(df: DataFrame,
-                                    ds_col_name: str,
-                                    y_col_name: str,
-                                    periods: int,
-                                    freqency: str,
-                                    ) -> DataFrame:
-
-    dashboard_file_name = 'forecast_dashboard.html'
+def univariate_time_series_forecast(df: DataFrame, ds_col_name: str, y_col_name: str, periods: int, freqency: str) -> DataFrame:
 
     df = prepare_data(df, ds_col_name, y_col_name)
 
     model = Prophet()
     model.fit(df)
-
-    # save model file
-    # with open('univariate_time_series_forecast_model.pkl', "wb") as f:
-    #     pickle.dump(model, f)
 
     future = model.make_future_dataframe(periods=periods, freq=freqency)
     forecast = model.predict(future)
@@ -72,24 +62,27 @@ def univariate_time_series_forecast(df: DataFrame,
     fig2.update_layout(title_text='Forecast Trends',
                        title_x=0.5)
 
-    # # TODO: write and download
-    # # save figures to a static web file
-    # with open(dashboard_file_name, 'w'): pass
-    # with open(dashboard_file_name, 'a') as f:
-    #     f.truncate()
-    #     f.write(fig1.to_html(full_html=False, include_plotlyjs='cdn'))
-    #     f.write(fig2.to_html(full_html=False, include_plotlyjs='cdn'))
+    modelstar_record(
+        record_type='md', content='Plot of the forecast using the Prophet\'s plot method and passing in your forecast dataframe.')
+
+    modelstar_record(record_type='html', content=fig1.to_html(
+        full_html=False, include_plotlyjs='cdn'))
+
+    modelstar_record(record_type='md', content='Plot of the forecast by components, by using Prophet\'s plot_components method.  By default you see the trend, yearly seasonality, and weekly seasonality of the time series.  If you include holidays, you will see those here, too.')
+
+    modelstar_record(record_type='html', content=fig2.to_html(
+        full_html=False, include_plotlyjs='cdn'))
 
     # rename cols to match user table
     forecast = forecast.rename({'ds': ds_col_name,
                                 'yhat': '%s_forecast' % y_col_name}, axis=1)
-    
+
     return forecast[[ds_col_name, '%s_forecast' % y_col_name, 'yhat_lower', 'yhat_upper']]
 
 
 if __name__ == '__main__':
     import os
-    sample_file_path = os.path.join(os.path.dirname(__file__),'example_wp_log_peyton_manning.csv')
+    sample_file_path = os.path.join(os.path.dirname(__file__), 'example.csv')
     # test 1
     df = pd.read_csv(sample_file_path)
     f = univariate_time_series_forecast(df, 'ds', 'y', 40, 'M')
