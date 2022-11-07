@@ -1,9 +1,9 @@
 [tool.poetry]
 name = "modelstar"
-version = "0.1.0"
+version = "0.3.0"
 description = "DevOps for User Defined Functions and Stored Procedures in Data Warehouses"
 authors = ["Adithya Krishnan <krishsandeep@gmail.com>"]
-keywords = ["snowflake", "databricks", "UDF", "Stored Procedure"]
+keywords = ["snowflake", "forecast", "UDF", "Stored Procedure"]
 readme = "README.md"
 license = "Apache-2.0"
 homepage = "https://modelstar.io"
