@@ -9,7 +9,7 @@ from modelstar.commands.run import run_sql
 from modelstar.commands.download import view_download_records, build_new_report
 from modelstar.executors.config import set_session, load_config
 from modelstar.executors.project import check_project_folder_structure
-from modelstar.utils.path import strip_file_namespace_pointer, check_file_path
+from modelstar.utils.path import strip_file_namespace_pointer, check_file_path, map_ml_builtins
 
 
 @click.group()
@@ -100,26 +100,36 @@ def build(ctx, file_path):
 
 @main.command("register")
 # TODO: Only accept register_type: function, procedure
-@click.argument("register_type", required=True)
-@click.argument("file_function_pointer", required=True)
+@click.argument("register_pointer", required=True)
+@click.argument("file_function_pointer", required=False)
 @click.pass_context
-def build(ctx, register_type, file_function_pointer):
+def build(ctx, register_pointer, file_function_pointer):
     '''
     modelstar register <function_name>
         registers the function that is in the functions folder.
         file_path:function_name
     '''
 
-    file_path, file_folder_path, file_name, function_name = strip_file_namespace_pointer(
-        file_function_pointer)
+    session_registry.load_registry()
+    check_project_folder_structure()
+    config = load_config()
+
+    if (register_pointer == 'function' or register_pointer == 'procedure'):
+        if file_function_pointer is None:
+            raise ValueError(f'Provide a `file_function_pointer` of the `{register_pointer}` to register.')
+        file_path, file_folder_path, file_name, function_name = strip_file_namespace_pointer(
+            file_function_pointer)
+        register_type = register_pointer
+        logger.echo(
+            f"Registering `{register_type}` as `{function_name}` from `{file_name}`")
+    else:
+        file_path, file_folder_path, file_name, function_name, register_type = map_ml_builtins(
+            builtin_pointer=register_pointer)
+        logger.echo(f"Registering `{function_name}` into {config.database}.{config.schema} of your data warehouse.")
 
     version = 'V1'
 
-    logger.echo(
-        f"Registering {register_type} as `{function_name}` from `{file_name}`")
-
-    check_project_folder_structure()
-    config = load_config()
+    # print(file_path, file_folder_path, file_name, function_name, register_type, version)
 
     if register_type == 'function':
         response = register_function_from_file(
@@ -145,6 +155,56 @@ def build(ctx, register_type, file_function_pointer):
     session_registry.add_register(
         name=function_name, type=register_type, version=version)
     session_registry.dump_registry()
+
+
+@main.command("deploy")
+# TODO: Only accept register_type: function, procedure
+@click.argument("builtin_pointer", required=True)
+@click.pass_context
+def build(ctx, builtin_pointer):
+    '''
+    modelstar register <function_name>
+        registers the function that is in the functions folder.
+        file_path:function_name
+    '''
+
+    session_registry.load_registry()
+
+    function_name, file_name, file_path = map_ml_builtins(
+        builtin_pointer=builtin_pointer)
+
+    version = 'V1'
+
+    logger.echo(
+        f"Registering {register_type} as `{function_name}` from `{file_name}`")
+
+    check_project_folder_structure()
+    config = load_config()
+
+    # if register_type == 'function':
+    #     response = register_function_from_file(
+    #         config, function_name, file_name, file_path, version=version)
+    #     logger.echo(response)
+    #     # TODO: Add this info to the response
+    #     logger.echo("Function available at",
+    #                 detail=f"`{config.database}.{config.schema}`")
+
+    # elif register_type == 'procedure':
+    #     response = register_procedure_from_file(
+    #         config, function_name, file_name, file_path, version=version)
+    #     logger.echo(response)
+    #     # TODO: Add this info to the response
+    #     logger.echo("Stored Procedure available at",
+    #                 detail=f"`{config.database}.{config.schema}`")
+
+    # else:
+    #     # TODO Make custom error for these.
+    #     raise ValueError(
+    #         f'`{register_type}` not a valid modelstar register command option.')
+
+    # session_registry.add_register(
+    #     name=function_name, type=register_type, version=version)
+    # session_registry.dump_registry()
 
 
 @main.command("create")
@@ -209,14 +269,15 @@ def build(ctx, run_id):
     modelstar check     
     '''
 
+    session_registry.load_registry()
+
     check_project_folder_structure()
     config = load_config()
 
     logger.echo('Loaded session', detail=config.name)
 
-    # view_download_records(config=config, run_id=run_id)
-    # session_registry.dump_registry()
-    # logger.echo(' ')
+    # build_new_report(run_id)
 
-    build_new_report(run_id)
-
+    view_download_records(config=config, run_id=run_id)
+    session_registry.dump_registry()
+    logger.echo(' ')

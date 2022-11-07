@@ -1,5 +1,6 @@
 import os
 from typing import List
+from modelstar.builtins import BUILTINS_PATH
 
 
 def strip_file_namespace_pointer(file_namespace_pointer: str):
@@ -64,3 +65,27 @@ def if_exists_else_create_file_folder(ff_path: str, ff_type: str):
         if ff_type == 'folder':
             if not os.path.isdir(ff_path):
                 raise ValueError(f'Existing File/Folder Conflict: {ff_path}')
+
+
+def map_ml_builtins(builtin_pointer: str):
+    procedures_path = os.path.join(BUILTINS_PATH, 'procedures')
+    builtin_pointer_map = {
+        'forecast:univariate_time_series_forecast': {
+            'file_path': os.path.join(BUILTINS_PATH, 'procedures/univariate_time_series_forecast.py'),
+            'function_name': 'univariate_time_series_forecast',
+            'register_type': 'procedure'}
+    }
+
+    if builtin_pointer in builtin_pointer_map:
+        builtin_info = builtin_pointer_map[builtin_pointer]
+        file_path = builtin_info['file_path']
+        function_name = builtin_info['function_name']
+        register_type = builtin_info['register_type']
+        file_name = os.path.basename(file_path)
+        file_folder_path = os.path.dirname(file_path)
+
+    else:
+        raise ValueError(
+            f'`{builtin_pointer}` is not a valid choice. Please refer to the available builtins.')
+
+    return file_path, file_folder_path, file_name, function_name, register_type

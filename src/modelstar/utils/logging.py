@@ -53,8 +53,6 @@ class SessionRegistry:
         self.registrations = []
         self.runs = []
 
-        self.load_registry()
-
     def load_registry(self):
         self.file_path = os.path.join(
             os.getcwd(), '.modelstar/session.registry.yaml')
