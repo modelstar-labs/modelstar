@@ -2,17 +2,9 @@
 
 This is a [modelstar](https://modelstar.io) project created using a Snowflake project template.
 
-## Quickstart
-
-Initialize your modelstar project using
-
-```shell
-modelstar init <project_name>
-```
-
 ## Add crendentials to your your project
 
-Edit the `modelstar.config.yaml` file inside your project to configure your datawarehouse.
+Inside the project folder change the values in `modelstar.config.yaml` to the ones of your snowflake account information. 
 
 ## Start your modelstar session
 
@@ -20,30 +12,22 @@ Edit the `modelstar.config.yaml` file inside your project to configure your data
 modelstar use <session_name>
 ```
 
-## Create a sample table
+## Create a session and test the credectials with the configuration given in the modelstar.config.yaml
 
 ```shell
-modelstar create table samples/functions/clients.csv:clients
+modelstar use <config_name>
+``` 
+
+## Register a forecasting function to your data warehouse
+
+```shell
+modelstar register forecast:univariate_time_series_forecast
 ```
 
-## Register the sample Python UDF
+## (Optional) Create a table to run this forecast function for.
+
+Modelstar provides some sample data that you can create a table out of in your data warehouse to test this procedure.
 
 ```shell
-modelstar register function samples/functions/find_capital.py:find_capital
-```
-
-## Run a sample query
-
-```shell
-modelstar run 'SELECT * FROM CLIENTS'
-```
-
-```shell
-modelstar run 'SELECT CLIENT_ID, CLIENT_COUNTRY, find_capital(CLIENT_COUNTRY) as CLIENT_CITY FROM CLIENTS'
-```
-
-## Register a stored-procedure
-
-```shell
-modelstar register procedure samples/machine_learning/training.py:ad_sales_model
+modelstar create table sample_data/sales.csv:SALES
 ```

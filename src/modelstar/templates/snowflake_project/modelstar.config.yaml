@@ -1,7 +1,7 @@
 # MODELSTAR CONFIGURATION FILE
 ---
 sessions:
-    - name: snowflake-test
+    - name: <config_name>
       connector: snowflake
       config:
           account: <account>

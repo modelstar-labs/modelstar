@@ -18,7 +18,7 @@ Creates a folder named as `<project_name>`. With a project template of the requi
 
 Inside the project folder change the values in `modelstar.config.yaml` to the ones of your snowflake account information. 
 
-## Test connection with the credentails you've given
+## Create a session and test the credectials with the configuration given in the modelstar.config.yaml
 
 ```shell
 modelstar use <config_name>
