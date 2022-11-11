@@ -52,6 +52,7 @@ def register_procedure_from_file(config: SnowflakeConfig, file_path: str, functi
     import_list_string = ', '.join(import_list)
 
     package_imports.append('pandas')
+    package_imports.append('numpy')
     package_list = [f"'{x}'" for x in set(package_imports)]
     package_list_string = ', '.join(package_list)
 
@@ -83,6 +84,7 @@ from {function.module_name} import {function.name}
 from modelstar import SNOWFLAKE_SESSION_STATE, get_kwargs, modelstar_table2df, modelstar_df2table, gen_random_id, modelstar_write_path
 from snowflake.snowpark.session import Session
 import pandas as pd
+import numpy as np
 from uuid import uuid4
 
 SNOWFLAKE_SESSION_STATE.run_id = gen_random_id()
@@ -109,6 +111,15 @@ def procedure_handler(session: Session, {param_list_string}):
 
     if isinstance(result, pd.DataFrame):
         result.columns = result.columns.str.upper()
+        result_dtypes = result.dtypes.to_dict()
+
+        date_time_cols = []
+
+        for col, col_type in result_dtypes.items():
+            if col_type == np.dtype('datetime64[ns]'):
+                date_time_cols.append(col)
+                forecast[col] = forecast[col].dt.strftime('%Y-%m-%d %H:%M:%S')    
+
         result_table_name = 'result_{function.name}'.upper()
         session.write_pandas(result, result_table_name, auto_create_table=True, overwrite=True)
         return_result = {{ 'return_table': result_table_name, 'run_id' : SNOWFLAKE_SESSION_STATE.run_id }}
