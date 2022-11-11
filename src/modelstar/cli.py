@@ -10,7 +10,8 @@ from modelstar.commands.run import run_sql
 from modelstar.commands.download import view_download_records, build_new_report
 from modelstar.executors.config import set_session, load_config
 from modelstar.executors.project import check_project_folder_structure
-from modelstar.utils.path import strip_file_namespace_pointer, check_file_path, map_ml_builtins
+from modelstar.utils.path import strip_file_namespace_pointer, check_file_path, map_ml_builtins 
+from modelstar.utils.logging import cli_blue, cli_magenta, cli_green
 
 
 @click.group()
@@ -45,6 +46,8 @@ def init(ctx, project_name: str):
 
     logger.echo('Your project has been created.')
     logger.echo('Project location', detail=project_path)
+
+    logger.echo(f"{cli_green('NOTE:: ')} Add '.modelstar' and 'modelstar.config.yaml' to your '.gitignore' file to protect sensitive information. \n")
 
 
 @main.command("use")

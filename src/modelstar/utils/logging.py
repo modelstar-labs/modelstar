@@ -33,12 +33,12 @@ class Logger:
     def echo(self, msg: Union[str, SnowflakeResponse], detail: str = None):
         if detail == None:
             if isinstance(msg, str):
-                print(f'\n  {msg}')
+                click.echo(f'\n  {msg}')
             elif isinstance(msg, SnowflakeResponse):
-                print('')
-                print(msg.table.print())
+                click.echo('')
+                click.echo(msg.table.print())
         else:
-            print(f'\n  {msg}:  {detail}')
+            click.echo(f'\n  {msg}:  {detail}')
 
 
 @dataclass
@@ -110,3 +110,17 @@ class SessionRegistry:
                             'version': version, 'runs': [], 'records': []}
 
             self.registrations.append(registration)
+
+
+def cli_blue(input: str) -> str:
+
+    return click.style(input, fg="blue")
+
+
+def cli_magenta(input: str) -> str:
+
+    return click.style(input, fg="magenta")
+
+def cli_green(input: str) -> str:
+
+    return click.style(input, fg="green")
