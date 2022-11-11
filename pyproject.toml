@@ -1,6 +1,6 @@
 [tool.poetry]
 name = "modelstar"
-version = "0.3.2"
+version = "0.3.3"
 description = "DevOps for User Defined Functions and Stored Procedures in Data Warehouses"
 authors = ["Adithya Krishnan <krishsandeep@gmail.com>"]
 keywords = ["snowflake", "forecast", "UDF", "Stored Procedure"]
