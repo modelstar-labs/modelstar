@@ -1,39 +1,33 @@
-# Command line interface to work with modelstar
+# Hi there, this is <a href="https://modelstar.io/" style="color: #AF3BEA;"><img src="./static/logo.png" height="28"> Modelstar</a> 👋
+
+ModelStar is the easiest way to ship and manage machine learning solutions inside Snowflake, with only a few lines of SQL.
+
+## Modelstar is for the modern data stack
+
+![How does Modelstar work?](./static/how-modelstar-works.png)
+
+## Who are the users?
+
+-   Snowflake and DBT users.
+-   Anyone who knows basic SQL.
+-   Analyst, data engineers.
+
+## Why we build Modelstar?
+
+Modelstar is our attempt to simplify ML for analysts. Our design philosophy is: **Data is the most critical component in ML, so shipping ML solutions should be as easy as creating data objects.**
 
 ## Installation
 
+To get started with Modelstar, install the Modelstar Python package into your local Python environment.
+
 ```shell
-pip install mdoelstar
+$ pip install modelstar
 ```
 
-## Project initialization
+It's recommended to install `modelstar` within a Python virtual environment using `pyenv`, `virtualenv`, or `poetry`.
 
-```shell
-modelstar init <project_name>
-``` 
+For a complete quickstart guide visit [**Modelstar-Quickstart**](https://modelstar.io/docs/quickstar)
 
-Creates a folder named as `<project_name>`. With a project template of the required files and folders. 
+## Tutorials
 
-## Add snowflake credentials
-
-Inside the project folder change the values in `modelstar.config.yaml` to the ones of your snowflake account information. 
-
-## Create a session and test the credectials with the configuration given in the modelstar.config.yaml
-
-```shell
-modelstar use <session_config_name>
-``` 
-
-## Register a forecasting function to your data warehouse
-
-```shell
-modelstar register forecast:univariate_time_series_forecast
-```
-
-## (Optional) Create a table to run this forecast function for.
-
-Modelstar provides some sample data that you can create a table out of in your data warehouse to test this procedure.
-
-```shell
-modelstar create table sample_data/sales.csv:SALES
-```
+-   [**Forecast Sales inside Snowflake with 1 Line of SQL**](https://modelstar.io/docs/tutorials/sales-forecasting-inside-snowflake)
