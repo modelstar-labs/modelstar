@@ -73,8 +73,9 @@ def univariate_time_series_forecast(df: DataFrame, ds_col_name: str, y_col_name:
     modelstar_record(record_type='html', content=fig2.to_html(
         full_html=False, include_plotlyjs='cdn'))
 
-    # rename cols to match user table
-    forecast = forecast.rename({'ds': ds_col_name,
-                                'yhat': '%s_forecast' % y_col_name}, axis=1)
+    forecast['ds'] = forecast['ds'].dt.strftime('%Y-%m-%d %H:%M:%S')    
 
-    return forecast[[ds_col_name, '%s_forecast' % y_col_name, 'yhat_lower', 'yhat_upper']]
+    # rename cols to match user table
+    forecast = forecast.rename({'ds': ds_col_name, 'yhat': f'{y_col_name}_forecast'}, axis=1)
+
+    return forecast[[ds_col_name, f'{y_col_name}_forecast', 'yhat_lower', 'yhat_upper']]

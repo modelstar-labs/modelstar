@@ -108,7 +108,8 @@ def procedure_handler(session: Session, {param_list_string}):
     SNOWFLAKE_SESSION_STATE.write_records()
 
     if isinstance(result, pd.DataFrame):
-        result_table_name = 'result_{function.name}'
+        result.columns = result.columns.str.upper()
+        result_table_name = 'result_{function.name}'.upper()
         session.write_pandas(result, result_table_name, auto_create_table=True, overwrite=True)
         return_result = {{ 'return_table': result_table_name, 'run_id' : SNOWFLAKE_SESSION_STATE.run_id }}
     else:

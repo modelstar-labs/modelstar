@@ -22,3 +22,9 @@ To install the local developing project into the environment in editable mode us
 ```shell
 poetry publish --build --username __token__ --password $PYPI_MODELSTAR_KEY --build --skip-existing
 ```
+
+---
+
+**Quick References**
+
+- [Snowpark API Reference](https://docs.snowflake.com/en/developer-guide/snowpark/reference/python/index.html)

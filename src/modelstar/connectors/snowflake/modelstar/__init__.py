@@ -40,7 +40,7 @@ class SnowflakeSessionState():
             'call_name': self.call_name,
             'call_version': self.call_version,
             'run_id': self.run_id,
-            'call_location': f'{self.database.capitalize()}/{self.schema.capitalize()}',
+            'call_location': f'{self.database.upper()}/{self.schema.upper()}',
             'stage': self.stage,
             'run_timestamp': self.timestamp.strftime("%m/%d/%Y, %H:%M:%S"),
             'records': self.records

@@ -30,7 +30,7 @@ def initialize_project(project_name: str) -> str:
             with open(os.path.join(current_working_directory, 'modelstar.config.yaml'), 'w') as file:
                 file.write('# MODELSTAR INTERNAL FILE: SESSION\n')
                 file.write('---\n')
-                dump_content = {'sessions': [{'name': 'snowflake-demo-config', 'connector': 'snowflake', 'config': {'account': '<account>', 'username': '<username>',
+                dump_content = {'sessions': [{'name': '<session_config_name>', 'connector': 'snowflake', 'config': {'account': '<account>', 'username': '<username>',
                                                                                                                     'password': '<password>', 'database': '<database>', 'schema': '<schema>', 'stage': '<stage>', 'warehouse': '<warehouse>'}}]}
                 yaml.dump(dump_content, file, sort_keys=False,
                           default_flow_style=False)
