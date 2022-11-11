@@ -14,7 +14,7 @@ from modelstar.utils.path import strip_file_namespace_pointer, check_file_path, 
 
 
 @click.group()
-@click.version_option(__version__, message=f'\n{click.style("Modelstar", fg="magenta")}, installed version: {click.style("%(version)s", fg="magenta")}\n')
+@click.version_option(__version__, message=f'\n  {click.style("Modelstar", fg="magenta")}, installed version: {click.style("%(version)s", fg="magenta")}\n')
 @click.option('--database', default=None, help='Target database. Optional: if None, modelstar uses the one set in the project config or prompts one to be created.')
 @click.option('--schema', default=None, help='Target schema. Optional: if None, modelstar uses the one set in the project config or prompts one to be created.')
 @click.option('--stage', default=None, help='Target stage. Optional: if None, modelstar uses the one set in the project config or prompts one to be created.')
