@@ -114,14 +114,28 @@ def procedure_handler(session: Session, {param_list_string}):
         result_dtypes = result.dtypes.to_dict()
 
         date_time_cols = []
-
+        all_cols = []
         for col, col_type in result_dtypes.items():
+            all_cols.append(col)
             if col_type == np.dtype('datetime64[ns]'):
                 date_time_cols.append(col)
-                forecast[col] = forecast[col].dt.strftime('%Y-%m-%d %H:%M:%S')    
+                result[col] = result[col].dt.strftime('%Y-%m-%d %H:%M:%S')    
+
+        col_transform = []
+        for col in all_cols:
+            if col in date_time_cols:
+                col_transform.append(f'TO_TIMESTAMP_NTZ({{col}}) as {{col}}')
+            else:
+                col_transform.append(col)
+        
+        cols_transform_string = ', '.join(col_transform)
 
         result_table_name = 'result_{function.name}'.upper()
         session.write_pandas(result, result_table_name, auto_create_table=True, overwrite=True)
+
+        session_sql = session.sql(f"CREATE or REPLACE TABLE {{result_table_name}} as SELECT {{cols_transform_string}} FROM {{result_table_name}}")
+        session_sql.collect()
+
         return_result = {{ 'return_table': result_table_name, 'run_id' : SNOWFLAKE_SESSION_STATE.run_id }}
     else:
         return_result = result
