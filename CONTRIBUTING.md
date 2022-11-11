@@ -19,6 +19,13 @@ To install the local developing project into the environment in editable mode us
 
 ## Publish the package on PyPI
 
+**Upadte Package in:**
+
+- `src/modelstar/version.py`
+- `pyproject.toml`
+
+**Build and publish the package:**
+
 ```shell
 poetry publish --build --username __token__ --password $PYPI_MODELSTAR_KEY --build --skip-existing
 ```
