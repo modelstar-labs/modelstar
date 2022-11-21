@@ -49,7 +49,7 @@ class SnowflakeSessionState():
 
 
 # https://docs.snowflake.com/en/developer-guide/udf/python/udf-python-creating.html#reading-and-writing-files-with-a-udf-handler
-SNOWFLAKE_FILE_HANDLER_PATH = os.path.abspath(__file__)
+MODELSTAR_PKG_SNOWFLAKE = os.path.abspath(__file__)
 
 SNOWFLAKE_IMPORT_DIRECTORY_NAME = "snowflake_import_directory"
 

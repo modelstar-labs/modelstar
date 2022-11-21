@@ -2,7 +2,8 @@ from dataclasses import dataclass
 from gettext import find
 from modelstar.executors.py_parser.implib_stdlib import py38
 from modelstar.executors.py_parser.implib_snowflake import anaconda, src_alias
-from modelstar.connectors.snowflake.modelstar import SNOWFLAKE_FILE_HANDLER_PATH
+from modelstar.connectors.snowflake.modelstar import MODELSTAR_PKG_SNOWFLAKE
+from modelstar.builtins.packages import BUILTIN_PKGS_PATH
 import os
 
 
@@ -18,7 +19,7 @@ class ModuleImport:
     abs_path: str = None
     rel_path: str = None
 
-    def check_import(self):
+    def check_import(self, search_dir: str = None):
         if self.module in src_alias:
             self.module = src_alias[self.module]['alias']
             
@@ -28,10 +29,14 @@ class ModuleImport:
             self.module_type = 'snowflake_imppkg'
         elif self.module == 'modelstar':
             self.module_type = 'modelstar'
-            self.abs_path = os.path.dirname(SNOWFLAKE_FILE_HANDLER_PATH)
+            self.abs_path = os.path.dirname(MODELSTAR_PKG_SNOWFLAKE)
+        elif self.module in ['pycaret']:
+            self.module_type = 'builtin_pkg'
+            self.abs_path = os.path.join(BUILTIN_PKGS_PATH, f'{self.module}.zip')
         else:
             self.module_type = 'local_imppkg'
-            search_dir = os.path.join(os.getcwd(), 'functions')
+            # TODO: check if the search path for local packages is working
+            # search_dir = os.path.join(os.getcwd(), 'functions')
             dirlist = os.listdir(search_dir)
 
             dirdict = {}

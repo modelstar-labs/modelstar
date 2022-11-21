@@ -1,6 +1,8 @@
 import json
 
-file_path = './anaconda_channeldata.json'
+# https://repo.anaconda.com/pkgs/snowflake/channeldata.json
+
+file_path = 'scripts/anaconda_channeldata.json'
 
 with open(file_path) as f:
     data = json.load(f)
