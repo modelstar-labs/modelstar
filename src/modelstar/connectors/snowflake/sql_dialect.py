@@ -138,7 +138,7 @@ def procedure_handler(session: Session, {param_list_string}):
 
         return_result = {{ 'return_table': result_table_name, 'run_id' : SNOWFLAKE_SESSION_STATE.run_id }}
     else:
-        return_result = result
+        return_result = {{ 'return_result': result, 'run_id' : SNOWFLAKE_SESSION_STATE.run_id }}
 
     return return_result
 $$;""")

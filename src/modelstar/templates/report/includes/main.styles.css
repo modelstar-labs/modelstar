@@ -4,6 +4,37 @@
 
 /* UNIVERSAL */
 
+:root {
+    --sans: system-ui, -apple-system, Segoe UI, Roboto, Ubuntu, Cantarell,
+        Noto Sans, sans-serif, BlinkMacSystemFont, "Segoe UI", Helvetica, Arial,
+        sans-serif, "Apple Color Emoji", "Segoe UI Emoji", "Segoe UI Symbol";
+    /* --sans: -apple-system, BlinkMacSystemFont, Inter, Segoe UI, Helvetica Neue,
+        sans-serif; */
+    /* --sans: "Lato", Helvetica, sans-serif; */
+    --serif: IBM Plex Serif, Tiempos, serif;
+    --mono: GT America Mono, Consolas, Monaco, "Andale Mono", "Ubuntu Mono",
+        monospace;
+
+    --font-weight-light: 300;
+    --font-weight-normal: 400;
+    --font-weight-semibold: 500;
+    --font-weight-bold: 700;
+
+    --font-size-base: 100%;
+    --color-base: #1c1e21;
+    --font-weight-base: var(--font-weight-normal);
+    --line-height-base: 1.65;
+
+    --h-font-size: 2rem;
+    --h-font-weight: var(--font-weight-semibold);
+    --h1-font-size: calc(var(--h-font-size) * 1);
+    --h2-font-size: calc(var(--h-font-size) * 0.75);
+    --h3-font-size: calc(var(--h-font-size) * 0.625);
+    --h4-font-size: calc(var(--h-font-size) * 0.5);
+    --h5-font-size: calc(var(--h-font-size) * 0.4375);
+    --h6-font-size: calc(var(--h-font-size) * 0.524);
+}
+
 html,
 body {
     height: 100%;
@@ -12,45 +43,52 @@ body {
     padding: 0;
     left: 0;
     top: 0;
-    font-size: 100%;
 }
 
 * {
-    font-family: "Lato", Helvetica, sans-serif;
-    color: #333447;
-    line-height: 1.5;
+    font-family: var(--sans);
+    font-size: var(--font-size-base) / var(--line-height-base);
+    font-weight: var(--font-weight-base);
+    color: var(--color-base);
+    line-height: var(--line-height-base);
 }
 
 /* TYPOGRAPHY */
 
 h1 {
-    font-size: 2.5rem;
+    font-size: var(--h1-font-size);
+    font-weight: var(--h-font-weight);
 }
 
 h2 {
-    font-size: 2rem;
+    font-size: var(--h2-font-size);
+    font-weight: var(--h-font-weight);
 }
 
 h3 {
-    font-size: 1.375rem;
+    font-size: var(--h3-font-size);
+    font-weight: var(--h-font-weight);
 }
 
 h4 {
-    font-size: 1.125rem;
+    font-size: var(--h4-font-size);
+    font-weight: var(--h-font-weight);
 }
 
 h5 {
-    font-size: 1rem;
+    font-size: var(--h5-font-size);
+    font-weight: var(--h-font-weight);
 }
 
 h6 {
-    font-size: 0.875rem;
+    font-size: var(--h6-font-size);
+    font-weight: var(--h-font-weight);
 }
 
 p {
     font-size: 1.125rem;
-    font-weight: 200;
-    line-height: 1.8;
+    line-height: var(--line-height-base);
+    font-weight: var(--font-weight-light);
 }
 
 .font-light {

@@ -3,6 +3,7 @@ import joblib
 from jinja2 import Environment, FileSystemLoader
 from modelstar.templates import TEMPLATES_PATH
 from modelstar.utils.path import if_exists_else_create_file_folder
+import markdown
 
 report_templates_folder = os.path.join(TEMPLATES_PATH, 'report')
 
@@ -27,6 +28,11 @@ def prepare_run_record_report(run_record_file_pointer: str):
     report_file_path = os.path.join(reports_folder, report_file_name)
 
     report_content_context = run_record
+    for idx, record in enumerate(report_content_context['records']):
+        if record['type'] == 'md':
+            report_content_context['records'][idx]['content'] = markdown.markdown(report_content_context['records'][idx]['content'])
+            report_content_context['records'][idx]['type'] = 'html'
+
     report_content = report_template.render(report_content_context)
 
     with open(report_file_path, mode="w", encoding="utf-8") as report_file:

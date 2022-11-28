@@ -7,3 +7,106 @@
     /* color: hsl(249 68% 44%); */
     font-style: italic;
 }
+
+.artefacts_report {
+    width: 100%;
+    font-size: 12px;
+}
+
+.artefacts_report img {
+    margin-left: auto;
+    margin-right: auto;
+    text-align: center;
+    max-width: 500px;
+    height: auto;
+}
+
+table.dataframe {
+    -webkit-text-size-adjust: 100%;
+    -webkit-tap-highlight-color: rgba(0, 0, 0, 0);
+    line-height: 1.7;
+    font-family: Inter, sans-serif;
+    box-sizing: border-box;
+    text-rendering: auto;
+    -webkit-font-smoothing: antialiased;
+    border-collapse: collapse;
+    border-spacing: 0;
+    table-layout: fixed;
+    background: #fff;
+    border: 0;
+    color: rgba(0, 0, 0, 0.7);
+    display: block;
+    font-size: 14px;
+    font-variant-numeric: tabular-nums;
+    overflow: auto;
+    overflow-x: auto;
+    margin-left: 0;
+    margin-right: 0;
+    -webkit-box-flex: 1;
+    max-width: 100%;
+    flex: 1;
+}
+
+table.dataframe thead {
+    line-height: 1.7;
+    border-bottom: 1px solid black;
+}
+
+table.dataframe thead tr {
+    vertical-align: middle;
+    padding: 0.5em 0.5em;
+    line-height: normal;
+    white-space: normal;
+    max-width: none;
+    border: none;
+    background: #fff;
+    text-align: center;
+}
+table.dataframe thead tr th {
+    line-height: normal;
+    white-space: normal;
+    max-width: none;
+    padding: 4px 8px;
+    vertical-align: middle;
+    background: hsla(210, 3%, 87%, 0.3);
+    border: 1px solid hsla(210, 3%, 87%, 0.8);
+    font-weight: 600;
+    text-align: center;
+}
+
+table.dataframe tbody {
+    line-height: 1.7;
+}
+table.dataframe tbody tr {
+    text-align: right;
+    vertical-align: middle;
+    padding: 0.5em 0.5em;
+    line-height: normal;
+    white-space: normal;
+    max-width: none;
+    border: none;
+    background: #fff;
+}
+table.dataframe tbody tr:hover {
+    background: rgba(28, 188, 236, 0.1);
+}
+
+table.dataframe tbody tr th {
+    line-height: normal;
+    white-space: normal;
+    max-width: none;
+    padding: 4px 8px;
+    background: hsla(210, 3%, 87%, 0.3);
+    border: 1px solid hsla(210, 3%, 87%, 0.8);
+    font-weight: 600;
+    text-align: left;
+}
+
+table.dataframe tbody tr td {
+    line-height: normal;
+    white-space: normal;
+    max-width: none;
+    padding: 4px 8px;
+    border: 1px solid hsla(210, 3%, 87%, 0.5);
+    text-align: left;
+}

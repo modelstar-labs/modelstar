@@ -56,5 +56,5 @@ def view_download_records(config, run_id: str):
 def build_new_report(run_id):
 
     record_info = prepare_run_record_report(
-        run_record_file_pointer='N6BVgs8YHko9Xp8H.modelstar.joblib.gz')
+        run_record_file_pointer=f'{run_id}.modelstar.joblib.gz')
     view_in_browser(file_path=record_info['report_file_path'])

@@ -1,6 +1,6 @@
 {% extends "base.html" %} {% block main %}
 <div class="notebook">
-    <h3 class="">Modelstar Report: {{run_id}}</h3>
+    <h1 style="font-size: 2.5rem">Modelstar Report: {{run_id}}</h1>
     <div>
         <div class="font-heavy"></div>
         <div class="font-heavy"></div>
@@ -33,13 +33,13 @@
             </tr>
         </tbody>
     </table>
-    <div style="margin-top: 4rem">
-        <h4>Artifacts Report</h4>
+    <div style="margin-top: 3rem">
+        <h1 style="font-size: 2.5rem">Artefacts Report</h1>
+        <div class="artefacts_report">
         {% for record in records %}
-        <div>
-            <div>{{ record.content }}</div>
-        </div>
+            {{ record.content }}
         {% endfor %}
+        </div>
     </div>
 </div>
 {% endblock main %}

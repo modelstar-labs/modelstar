@@ -12,7 +12,7 @@ from dataclasses import dataclass
 class Logger:
     '''
     Create a logger context, that can output to the console and also store it in a file.
-    The option can be toggled using an environment variable. 
+    The option can be toggled using an environment variable.
 
     Information to append to the logger:
         DEBUG
@@ -82,16 +82,22 @@ class SessionRegistry:
                         'registrations': self.registrations, 'runs': self.runs}
             yaml.dump(dump_doc, doc, sort_keys=False, default_flow_style=False)
 
-    def add_record(self, run_record: dict):
+    def add_record(self, run_record: dict) -> None:
         call_name = run_record['call_name']
         call_version = run_record['call_version']
         run_id = run_record['run_id']
         registrations = self.registrations
 
-        find_regis = (i for i, e in enumerate(
-            registrations) if (e['name'] == call_name and e['version'] == call_version))
+        idx_regis = None
+        for idx, regis in enumerate(registrations):
+            if (regis['name'] == call_name and regis['version'] == call_version):
+                idx_regis = idx
+                break
 
-        idx_regis = next(find_regis)
+        if idx_regis == None:
+            return None
+
+        # idx_regis = next(find_regis)
         registrations[idx_regis]['runs'].append(run_id)
         registrations[idx_regis]['records'].append({'run_id': run_record['run_id'], 'report_file_path': run_record['report_file_path'],
                                                    'run_record_file_path': run_record['run_record_file_path'], 'run_timestamp': run_record['run_timestamp']})
@@ -120,6 +126,7 @@ def cli_blue(input: str) -> str:
 def cli_magenta(input: str) -> str:
 
     return click.style(input, fg="magenta")
+
 
 def cli_green(input: str) -> str:
 

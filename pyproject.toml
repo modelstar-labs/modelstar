@@ -19,6 +19,7 @@ pandas = "^1.5.1"
 PyYAML = "^6.0"
 jsonschema = "^4.16.0"
 Jinja2 = "^3.1.2"
+markdown = "^3.4.1"
 
 [tool.poetry.scripts]
 modelstar = "modelstar.cli:main"
