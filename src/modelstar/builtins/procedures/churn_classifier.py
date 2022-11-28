@@ -20,7 +20,7 @@ import IPython
 import pandas as pd
 import numpy as np
 from pandas import DataFrame
-from modelstar import modelstar_record
+from modelstar import modelstar_record, modelstar_write_path
 
 # the main training function
 # to do: auto-select sort metrics; output dashboard (metrics, feature importance, etc.)
@@ -76,5 +76,6 @@ def train_churn_classifier(df: DataFrame,
 
     # modified to return the model, that can be manually saved.
     model_ = current_experiment.save_model(best_model, 'best_model')
+    modelstar_write_path(local_path='churn_model.joblib', write_object=model_)
 
     return 'success'

@@ -233,8 +233,8 @@ def build(ctx, run_id):
 
     logger.echo('Loaded session', detail=config.name)
 
-    build_new_report(run_id)
+    # build_new_report(run_id)
 
-    # view_download_records(config=config, run_id=run_id)
-    # session_registry.dump_registry()
-    # logger.echo(' ')
+    view_download_records(config=config, run_id=run_id)
+    session_registry.dump_registry()
+    logger.echo(' ')
