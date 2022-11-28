@@ -73,6 +73,10 @@ def map_ml_builtins(builtin_pointer: str):
         'forecast:univariate_time_series_forecast': {
             'file_path': os.path.join(BUILTINS_PATH, 'procedures/univariate_time_series_forecast.py'),
             'function_name': 'univariate_time_series_forecast',
+            'register_type': 'procedure'},
+        'classifier:churn_classifier': {
+            'file_path': os.path.join(BUILTINS_PATH, 'procedures/churn_classifier.py'),
+            'function_name': 'train_churn_classifier',
             'register_type': 'procedure'}
     }
 
