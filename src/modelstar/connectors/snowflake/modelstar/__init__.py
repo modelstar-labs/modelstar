@@ -155,3 +155,45 @@ def modelstar_record(record_type: str, content: str) -> None:
 
     SNOWFLAKE_SESSION_STATE.records.append(
         {'type': record_type, 'content': content})
+
+
+def modelstar_register_pycaret_inference_udf(function_name: str, model_filename: str, handler_args: list) -> None:
+    handler_arg_string =  ', '.join([f'{i["col_name"]} {i["col_type"]}' for i in handler_args])
+    function_arg_string =  ', '.join([f'{i["col_name"]}' for i in handler_args])
+
+    sql_statement = f""" USE {SNOWFLAKE_SESSION_STATE.database}.{SNOWFLAKE_SESSION_STATE.schema};
+
+create or replace function {function_name}({handler_arg_string})
+returns VARIANT
+language python
+runtime_version=3.8
+packages = ('numpy', 'markupsafe', 'threadpoolctl', 'scikit-learn', 'pandas', 'matplotlib', 'importlib_metadata', 'plotly', 'jinja2', 'snowflake-snowpark-python', 'ipython', 'cycler', 'tqdm', 'lightgbm', 'packaging', 'joblib', 'category_encoders', 'psutil', 'numba', 'scipy', 'requests')
+imports = ('@{STAGE_NAME}/{REGISTRY_NAME}/{REGISTRY_VERSION}/modelstar.zip', '@{STAGE_NAME}/{REGISTRY_NAME}/{REGISTRY_VERSION}/pycaret.zip', '@{STAGE_NAME}/{REGISTRY_NAME}/{REGISTRY_VERSION}/{model_filename}')
+handler='{function_name}'
+as
+$$
+import joblib
+import pandas as pd
+import pycaret.classification as pcc
+from modelstar import modelstar_read_path, get_kwargs
+
+def {function_name}({function_arg_string}):
+    _model = joblib.load(modelstar_read_path(local_path = '{model_filename}'))
+    
+    kwargs = get_kwargs()    
+    data = pd.DataFrame.from_records([kwargs])
+    
+    prediction_table = pcc.predict_model(_model[0], data=data)
+    prediction_value = prediction_table[['prediction_label']].iat[0, 0]
+
+    if type(prediction_value) == str:
+        return_value = str(prediction_value)
+    else:
+        return_value = prediction_value
+
+    return return_value
+$$;
+"""
+    
+    sql_ =  SNOWFLAKE_SESSION_STATE.session.sql(sql_statement)
+    sql_.collect()

@@ -76,11 +76,32 @@ def session(ctx, target_config):
     logger.echo(response)
     logger.echo(' ')
 
+@main.command("show")
+@click.pass_context
+def show(ctx):
+    '''
+    modelstar use <target_config>
+        Checks if the config.modelstar parameters are right
+        Connects to the server of snowflake and gets all the database info 
+    '''
+
+    session_registry.load_registry()
+    check_project_folder_structure()
+    config = load_config()
+    
+    logger.echo('Loaded session', detail=config.name)
+
+    response = list_databases(config)
+
+    logger.echo('Showing available databases for config', detail=config.name)
+    logger.echo(response)
+    logger.echo(' ')
+
 
 @main.command("upload")
 @click.argument("file_path", required=True)
 @click.pass_context
-def build(ctx, file_path):
+def upload(ctx, file_path):
     '''
     modelstar upload <file_path>
         Uploads the file from <file_path> into the cloud location.
@@ -108,7 +129,7 @@ def build(ctx, file_path):
 @click.argument("register_pointer", required=True)
 @click.argument("file_function_pointer", required=False)
 @click.pass_context
-def build(ctx, register_pointer, file_function_pointer):
+def register(ctx, register_pointer, file_function_pointer):
     '''
     modelstar register <function_name>
         registers the function that is in the functions folder.
@@ -168,7 +189,7 @@ def build(ctx, register_pointer, file_function_pointer):
 @click.argument("option", required=True)
 @click.argument("source_name_pointer", required=True)
 @click.pass_context
-def build(ctx, option, source_name_pointer):
+def create(ctx, option, source_name_pointer):
     '''
     modelstar create <option> <source>
     modelstar create table project/data/abc.csv:table_name
@@ -199,7 +220,7 @@ def build(ctx, option, source_name_pointer):
 @main.command("run")
 @click.argument("sql", required=True)
 @click.pass_context
-def build(ctx, sql):
+def run(ctx, sql):
     '''
     modelstar create <option> <source>
     modelstar create table project/data/abc.csv:table_name
@@ -221,7 +242,7 @@ def build(ctx, sql):
 @main.command("check")
 @click.argument("run_id", required=True)
 @click.pass_context
-def build(ctx, run_id):
+def check(ctx, run_id):
     '''
     modelstar check     
     '''

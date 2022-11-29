@@ -66,6 +66,7 @@ def register_procedure_from_file(config, function_name: str, file_name: str, fil
     # Register the function with the imports, packages and stage path
     function_register = parse_function_file(
         file_path, file_name, function_name)
+    function_register.function.version = version
 
     if isinstance(config, SnowflakeConfig):
         snowflake_context = SnowflakeContext(config)

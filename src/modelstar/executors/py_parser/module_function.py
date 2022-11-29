@@ -36,6 +36,7 @@ class ModuleFunction:
     file_name: str
     module_name: str
     line_no: int
+    version: str = ''
 
     def sql_param_list(self, type_mapper: dict) -> str:
         sql_sep = ', '
