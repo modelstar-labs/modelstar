@@ -161,9 +161,7 @@ def modelstar_register_pycaret_inference_udf(function_name: str, model_filename:
     handler_arg_string =  ', '.join([f'{i["col_name"]} {i["col_type"]}' for i in handler_args])
     function_arg_string =  ', '.join([f'{i["col_name"]}' for i in handler_args])
 
-    sql_statement = f""" USE {SNOWFLAKE_SESSION_STATE.database}.{SNOWFLAKE_SESSION_STATE.schema};
-
-create or replace function {function_name}({handler_arg_string})
+    sql_statement = f"""create or replace function {function_name}({handler_arg_string})
 returns VARIANT
 language python
 runtime_version=3.8

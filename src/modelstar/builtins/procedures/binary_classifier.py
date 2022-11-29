@@ -28,7 +28,7 @@ from modelstar import modelstar_record, modelstar_write_path, modelstar_register
 import pycaret.classification as pcc
 
 
-def train_churn_classifier(df: DataFrame,
+def train_binary_classifier(df: DataFrame,
                            target_col_name: str,
                            ignore_col_list: list) -> dict:
 
@@ -81,18 +81,19 @@ def train_churn_classifier(df: DataFrame,
 
     # Register the inference function
     handler_args_list = []
-    data_df = df.loc[:, ~df.columns.isin(
-        ignore_col_list.append(target_col_name))]
-    for col, dtype in data_df.dtypes.to_dict().items():
-        if dtype.name == 'object':
-            arg_type = 'STRING'
-        if dtype.name == 'bool':
-            arg_type = 'BOOL'
-        if dtype.name.startswith('int'):
-            arg_type = 'NUMBER'
-        if dtype.name.startswith('float'):
-            arg_type = 'FLOAT'
-        handler_args_list.append({'col_name': col, 'col_type': arg_type})
+    ignore_df_cols = ignore_col_list
+    ignore_df_cols.append(target_col_name)
+    for col, dtype in df.dtypes.to_dict().items():
+        if col not in ignore_df_cols:
+            if dtype.name == 'object':
+                arg_type = 'STRING'
+            if dtype.name == 'bool':
+                arg_type = 'BOOL'
+            if dtype.name.startswith('int'):
+                arg_type = 'NUMBER'
+            if dtype.name.startswith('float'):
+                arg_type = 'FLOAT'
+            handler_args_list.append({'col_name': col, 'col_type': arg_type})
 
     modelstar_register_pycaret_inference_udf(
         function_name='predict_binary_classifier', model_filename='classifier_model.joblib.gz', handler_args=handler_args_list)
