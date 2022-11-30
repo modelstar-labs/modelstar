@@ -19,7 +19,7 @@ To install the local developing project into the environment in editable mode us
 
 ## Publish the package on PyPI
 
-**Upadte Package in:**
+**Upadte Package Version in:**
 
 - `src/modelstar/version.py`
 - `pyproject.toml`
