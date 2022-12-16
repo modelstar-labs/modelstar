@@ -187,7 +187,7 @@ def {function_name}({function_arg_string}):
     if type(prediction_value) == str:
         return_value = str(prediction_value)
     else:
-        return_value = prediction_value
+        return_value = prediction_value.item()
 
     return return_value
 $$;

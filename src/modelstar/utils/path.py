@@ -71,12 +71,20 @@ def map_ml_builtins(builtin_pointer: str):
     procedures_path = os.path.join(BUILTINS_PATH, 'procedures')
     builtin_pointer_map = {
         'forecast:univariate_time_series_forecast': {
-            'file_path': os.path.join(BUILTINS_PATH, 'procedures/univariate_time_series_forecast.py'),
+            'file_path': os.path.join(BUILTINS_PATH, 'procedures', 'univariate_time_series_forecast.py'),
             'function_name': 'univariate_time_series_forecast',
             'register_type': 'procedure'},
         'classifier:binary_classifier': {
-            'file_path': os.path.join(BUILTINS_PATH, 'procedures/binary_classifier.py'),
+            'file_path': os.path.join(BUILTINS_PATH, 'procedures', 'binary_classifier.py'),
             'function_name': 'train_binary_classifier',
+            'register_type': 'procedure'},
+        'ml:classifier': {
+            'file_path': os.path.join(BUILTINS_PATH, 'procedures', 'classifier.py'),
+            'function_name': 'train_classifier',
+            'register_type': 'procedure'},
+        'ml:regressor': {
+            'file_path': os.path.join(BUILTINS_PATH, 'procedures', 'regressor.py'),
+            'function_name': 'train_regressor',
             'register_type': 'procedure'}
     }
 
