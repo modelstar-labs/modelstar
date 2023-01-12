@@ -26,7 +26,7 @@ $ pip install modelstar
 
 It's recommended to install `modelstar` within a Python virtual environment using `pyenv`, `virtualenv`, or `poetry`.
 
-For a complete quickstart guide visit [**Modelstar-Quickstart**](https://modelstar.io/docs/quickstar)
+For a complete quickstart guide visit [**Modelstar-Quickstart**](https://modelstar.io/docs/quickstart)
 
 ## Tutorials
 
