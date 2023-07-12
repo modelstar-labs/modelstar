@@ -1,16 +1,17 @@
+import os
 import click
 from modelstar.version import __version__
 from modelstar import logger, session_registry
 from modelstar.commands.project import initialize_project
 from modelstar.commands.database import list_databases
 from modelstar.commands.register import register_function_from_file, register_procedure_from_file
-from modelstar.commands.upload import upload_file
+from modelstar.commands.upload import upload_file, upload_folder
 from modelstar.commands.create import create_table
 from modelstar.commands.run import run_sql
 from modelstar.commands.download import view_download_records, build_new_report
 from modelstar.executors.config import set_session, load_config
 from modelstar.executors.project import check_project_folder_structure
-from modelstar.utils.path import strip_file_namespace_pointer, check_file_path, map_ml_builtins
+from modelstar.utils.path import strip_file_namespace_pointer, check_file_path, map_ml_builtins, check_folder_path
 from modelstar.utils.logging import cli_blue, cli_magenta, cli_green
 
 
@@ -76,6 +77,7 @@ def session(ctx, target_config):
     logger.echo(response)
     logger.echo(' ')
 
+
 @main.command("show")
 @click.pass_context
 def show(ctx):
@@ -88,7 +90,7 @@ def show(ctx):
     session_registry.load_registry()
     check_project_folder_structure()
     config = load_config()
-    
+
     logger.echo('Loaded session', detail=config.name)
 
     response = list_databases(config)
@@ -96,32 +98,6 @@ def show(ctx):
     logger.echo('Showing available databases for config', detail=config.name)
     logger.echo(response)
     logger.echo(' ')
-
-
-@main.command("upload")
-@click.argument("file_path", required=True)
-@click.pass_context
-def upload(ctx, file_path):
-    '''
-    modelstar upload <file_path>
-        Uploads the file from <file_path> into the cloud location.
-    '''
-
-    logger.echo('Checking file', detail=file_path)
-
-    abs_file_path = check_file_path(file_path)
-
-    logger.echo('Uploading file', detail=abs_file_path)
-
-    check_project_folder_structure()
-    config = load_config()
-
-    response = upload_file(config, file_path)
-
-    logger.echo(response)
-
-    logger.echo('File available at',
-                detail=f'{config.database}.{config.schema}.@{config.stage}')
 
 
 @main.command("register")
@@ -259,3 +235,44 @@ def check(ctx, run_id):
     view_download_records(config=config, run_id=run_id)
     session_registry.dump_registry()
     logger.echo(' ')
+
+
+@main.command("upload")
+@click.argument("local_path", required=True)
+@click.argument("stage_path", required=False)
+@click.pass_context
+def upload(ctx, local_path: str, stage_path: str = None):
+    '''
+    modelstar upload <local_path> <remote_path>        
+    '''
+    if os.path.isfile(local_path):
+        logger.echo('Checking file', detail=local_path)
+        abs_file_path = check_file_path(local_path)
+        logger.echo('Uploading file', detail=abs_file_path)
+
+        check_project_folder_structure()
+        config = load_config()
+
+        response = upload_file(config, local_path)
+
+        logger.echo(response)
+        logger.echo('File available at',
+                    detail=f'{config.database}.{config.schema}.@{config.stage}/{stage_path}')
+    elif os.path.isdir(local_path):
+        logger.echo('Checking folder: ', detail=local_path)
+
+        abs_folder_path = check_folder_path(local_path)
+
+        logger.echo('Uploading folder: ', detail=abs_folder_path)
+
+        check_project_folder_structure()
+        config = load_config()
+
+        response = upload_folder(config, abs_folder_path, stage_path)
+
+        logger.echo(response)
+
+        logger.echo('Folder available at',
+                    detail=f'{config.database}.{config.schema}.@{config.stage}/{stage_path}')
+    else:
+        raise ValueError(f'`{local_path}` is not a valid file or folder path.')

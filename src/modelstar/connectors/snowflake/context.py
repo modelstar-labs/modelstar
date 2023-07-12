@@ -90,6 +90,16 @@ class SnowflakeContext:
 
         return SnowflakeResponse(table=response_table, info={'file_stage_path': file_stage_path})
 
+    def put_folder(self, folder_path: str, stage_path: str = None) -> SnowflakeResponse:
+        sql_statements_0 = SnowSQL.session_use(self.config)
+        sql_statements_1 = SnowSQL.put_folder_from_local(
+            self.config, folder_path, stage_path)
+        sql_statements = sql_statements_0 + sql_statements_1
+
+        response_table = self.execute_with_context(sql_statements, fetch=5)
+
+        return SnowflakeResponse(table=response_table, info={'folder_stage_path': f'@{self.config.stage}'})
+
     def create_table_from_csv(self, file_path: str, table_info: TableInfo, file_format: FileFormat) -> SnowflakeResponse:
         '''
         Operations performed:

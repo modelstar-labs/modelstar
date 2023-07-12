@@ -36,6 +36,20 @@ def strip_file_namespace_pointer(file_namespace_pointer: str):
     return abs_file_path, file_folder_path, file_name, namespace_pointer
 
 
+def check_folder_path(folder_path: str) -> str:
+    folder_path = folder_path.strip()
+    abs_folder_path = os.path.abspath(folder_path)
+
+    if not os.path.exists(abs_folder_path):
+        raise ValueError(
+            f"Unable to locate {folder_path} or it does not exist. Tip: provide an absolute path.")
+
+    if not os.path.isdir(abs_folder_path):
+        raise ValueError(f'`{folder_path}` is not a valid folder.')
+
+    return abs_folder_path
+
+
 def check_file_path(file_path: str) -> str:
     file_path = file_path.strip()
     abs_file_path = os.path.abspath(file_path)

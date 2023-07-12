@@ -1,3 +1,4 @@
+import os
 from modelstar.executors.table import TableInfo
 from modelstar.connectors.snowflake.context_types import SnowflakeConfig, FileFormat
 from modelstar.connectors.snowflake.sql_dialect.register_sproc import register_procedure_from_file
@@ -21,10 +22,30 @@ def put_file_from_local(config: SnowflakeConfig, file_path: str, stage_path: str
     sql_statements = []
     if stage_path is not None:
         sql_statements.append(
-            f'PUT file://{file_path} @{config.stage}/{stage_path} OVERWRITE = TRUE')
+            f'PUT file://{file_path} @{config.stage}/{stage_path} OVERWRITE = TRUE auto_compress=false;')
     else:
         sql_statements.append(
-            f'PUT file://{file_path} @{config.stage} OVERWRITE = TRUE')
+            f'PUT file://{file_path} @{config.stage} OVERWRITE = TRUE auto_compress=false;')
+
+    return sql_statements
+
+
+def put_folder_from_local(config: SnowflakeConfig, folder_path: str, stage_path: str = None):
+
+    # TODO add threads to this to make this faster.
+    sql_statements = []
+    for root, directories, contents in os.walk(folder_path, topdown=False):
+        for name in contents:
+            local_file_path = os.path.join(root, name)
+            file_dir_path = os.path.dirname(
+                os.path.relpath(local_file_path, start=folder_path))
+
+            if stage_path is not None:
+                _stmt = f'PUT file://{local_file_path} @{config.stage}/{stage_path}/{file_dir_path} OVERWRITE = TRUE auto_compress=false;'
+            else:
+                _stmt = f'PUT file://{local_file_path} @{config.stage}/{file_dir_path} OVERWRITE = TRUE auto_compress=false;'
+
+            sql_statements.append(_stmt)
 
     return sql_statements
 
