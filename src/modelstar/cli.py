@@ -256,6 +256,9 @@ def upload(ctx, local_path: str, stage_path: str = None):
         response = upload_file(config, local_path)
 
         logger.echo(response)
+        
+        if stage_path == None:
+            stage_path = ''
         logger.echo('File available at',
                     detail=f'{config.database}.{config.schema}.@{config.stage}/{stage_path}')
     elif os.path.isdir(local_path):
@@ -271,7 +274,9 @@ def upload(ctx, local_path: str, stage_path: str = None):
         response = upload_folder(config, abs_folder_path, stage_path)
 
         logger.echo(response)
-
+        
+        if stage_path == None:
+            stage_path = ''
         logger.echo('Folder available at',
                     detail=f'{config.database}.{config.schema}.@{config.stage}/{stage_path}')
     else:
